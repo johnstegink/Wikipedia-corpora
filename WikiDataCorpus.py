@@ -1,48 +1,47 @@
 # Script to create a corpus based on wikipedia.
 # run as: wikidatacorpus.py -s <subject> -o <outputdirectory>
 
-import sys,getopt
-import Ontology
+import sys,argparse
+from Wikidata import Wikidata
 
 # Constants
-wikidata_enpoint = "https://query.wikidata.org"
+wikidata_enpoint = "https://query.wikidata.org/sparql"
 
 def read_arguments():
     """
     Read arguments from the command line
-    :return: (subject, outputdirectory)
+    :return: (subject, outputdirectory, language)
     """
-    subject = ''
-    output = ''
 
-    argv = sys.argv[1:]
-    try:
-        opts, args = getopt.getopt(argv,"s:o:", ["subject=","output="])
-    except getopt.GetoptError:
-        print("wikidatacorpus.py -s <subject> -o <outputdirectory>")
-        sys.exit(2)
+    parser = argparse.ArgumentParser(description='Read articles from wikipedia based on WikiData option.')
+    parser.add_argument('-s', '--subjects', help='Main wikidata subjects', required=True)
+    parser.add_argument('-l', '--language', help='Language code, for example "nl" or "en"', required=True, default="en")
+    parser.add_argument('-o', '--output', help='Output directory, when no output is given the count will be printed', required=False)
+    args = vars(parser.parse_args())
 
-    for opt, arg in opts:
-        if opt in ("-s", "--subject"):
-            subject = arg
-        elif opt in ("-o", "--output"):
-            output = arg
 
-    # Check the subject
-    message = Ontology.check_subject( subject)
+    subjects = args["subjects"].split(",")
+    message = Wikidata.check_property(subjects)
     if message != "":
         print( message)
         exit( 3)
 
-    return (subject,output)
+    if not "output" in args:
+        output = ""
+    else:
+        output = args["output"]
+
+    return (subjects,output, args["language"].lower())
 
 
 
 # Main part of the script
 if __name__ == '__main__':
-    (subject, output) = read_arguments()
+    (subjects, output, language) = read_arguments()
 
-    wikidata = Ontology(wikidata_enpoint, subject)
-
+    wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=subjects, language=language, debug=True)
+    urls = wikidata.read_all_items()
+    if output == "":
+        print( len(urls))
 
 
