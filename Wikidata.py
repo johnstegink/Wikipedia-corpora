@@ -15,36 +15,9 @@ class Wikidata:
         """
         self.wikidata = WDSparql( "cache", wikidata_endpoint,debug=debug)
         self.subjects = subjects
-        self.uniqueid = "-".join( subjects)
+        self.uniqueid = "-".join( subjects).replace(":", "_") + "-" + language
         self.debug = debug
         self.language = language
-
-
-    def __read_all_classes(self):
-        """
-        Read al items from the given subject and return the ids
-        :return:
-        """
-
-        query = f"""
-            SELECT ?class WITH {{
-                SELECT ?class {{
-                  VALUES ?subjects {{ {' '.join(self.subjects) } }} . 
-                  ?class wdt:P279* ?subjects .
-                }}
-              }} AS %items WHERE {{ 
-                INCLUDE %items .
-            }}
-                        """
-        items = self.wikidata.query( query, "read_all_classes_" + self.uniqueid)
-        classes = set()
-
-        # Read items from results
-        for item in items:
-            classes.add( item["class"]["value"])
-
-        # all sub classes
-        return list( classes)
 
 
     def read_all_items(self):
@@ -52,24 +25,28 @@ class Wikidata:
         Read al items from the given subject and return the ids
         :return:
         """
-        classes = self.__read_all_classes()
+
         query = f"""
-			SELECT ?item 
-			WHERE
+            SELECT ?article 
+            WHERE 
             {{
-			   VALUES ?classes {{ {' '.join(classes)} }} 
-			   ?item wdt:P31 ?classes  
-			}}                        
-		"""
+              VALUES ?subjects {{ {' '.join(self.subjects) } }} . 
+              ?class wdt:P279* ?subjects .
+              ?item wdt:P31 ?class. 
+              ?article schema:about ?item.
+              ?article schema:isPartOf <https://{self.language}.wikipedia.org/>
+            }}                        
+        """
         items = self.wikidata.query( query, "read_all_items_" + self.uniqueid)
-        itms = set()
+        articles = set()
 
         # Read items from results
         for item in items:
-            itms.add( item["item"]["value"])
+            article = item["article"]["value"]
+            articles.add( article)
 
         # all sub classes
-        return list( itms)
+        return list( articles)
 
 
     def read_urls_from_ids(self, ids):

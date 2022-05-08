@@ -39,9 +39,9 @@ def read_arguments():
 if __name__ == '__main__':
     (subjects, output, language) = read_arguments()
 
-    wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=subjects, language=language, debug=True)
+    wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=subjects, language=language, debug=False)
     urls = wikidata.read_all_items()
-    if output == "":
+    if output == "" or output is None:
         print( len(urls))
 
 

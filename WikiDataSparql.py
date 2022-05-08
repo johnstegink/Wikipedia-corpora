@@ -4,6 +4,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 import requests
 import os
 import json
+import time
 
 
 class WDSparql:
@@ -13,6 +14,8 @@ class WDSparql:
         - One client is allowed 30 error queries per minute
     Therefore results are cached in a file
     """
+
+    delayBetweenCallsInms = 2.1
 
     def __init__(self, cachedir, endpoint_url, debug=False):
         if not os.path.isdir( cachedir): # Create directory if not exists
@@ -61,6 +64,8 @@ class WDSparql:
 
 
         r = requests.get(url=self.endpoint_url, params=parameters, headers = headers)
+        time.sleep(WDSparql.delayBetweenCallsInms)  # Make sure we don't cross the limits
+
         return r.text
 
 
