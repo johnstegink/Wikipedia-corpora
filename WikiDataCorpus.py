@@ -6,6 +6,7 @@ from Wikidata import Wikidata
 
 # Constants
 wikidata_enpoint = "https://query.wikidata.org/sparql"
+wikipedia_dumpdir = "../../WikipediaDump"
 
 def read_arguments():
     """
@@ -39,7 +40,7 @@ def read_arguments():
 if __name__ == '__main__':
     (subjects, output, language) = read_arguments()
 
-    wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=subjects, language=language, debug=False)
+    wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=subjects, dump_dir=wikipedia_dumpdir, language=language, debug=False)
     urls = wikidata.read_all_items()
     if output == "" or output is None:
         print( len(urls))
