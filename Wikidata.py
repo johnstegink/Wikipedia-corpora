@@ -5,6 +5,7 @@ import requests
 import os
 import bz2
 import pickle
+import xml.etree.ElementTree as ET
 
 class Wikidata:
     max_number_of_ids_for_wbgetentities = 50  # Maximum number of IDs to be queried at once
@@ -61,6 +62,7 @@ class Wikidata:
             words = pickle.load(file)
             file.close()
         else:
+            print("One moment please, building index...")
             words = self.__make_wiki_index( index_file)
             file = open(pickle_file, "wb")
             words = pickle.dump(words, file)
@@ -70,22 +72,48 @@ class Wikidata:
 
     def __make_wiki_index(self, index_file):
         """
-        Read the index file and create a dictionary with the words as keys and tuple (start, end)
+        Read the index file and create a dictionary with the words as keys and tuple (articleid, start, end)
         :param index_file:
         :return:
         """
         lines = self.__read_all_lines_from_bz2( index_file)
         lines_in_parts = [line.split(':') for line in lines]
-        lines_in_parts += [0,0,"EOF"]  # The last word in the index, skip it for now
+        pos = self.__read_from_to( lines_in_parts)
+
         words = {}
         # Loop through all lines
-        for i in range(0, len(lines_in_parts) - 2):
-            if len( lines_in_parts[i]) == 3:
-                word = lines_in_parts[i][2]
+        for line in lines_in_parts:
+            if len( line) == 3:  ## Only valid lines
+                word = line[2]
                 if not word in words:
-                    words[word] = (lines_in_parts[i][0], 0)
+                    seekpos = line[0]
+                    articleid = int( line[1])
+                    words[word] = (pos[seekpos][0], pos[seekpos][1], articleid)
 
         return words
+
+
+    def __read_from_to(self, lines):
+        """
+        returns a dictionary with a start position as a key and a tuple( start, end) as
+        value. The key is a string, the tuple contains two integers. It uses the
+        lines from the index as input and reads field 0 (the position)
+        :param lines:
+        :return:
+        """
+        current = ""
+        positions = []
+        for line in lines:
+            if len(line) == 3  and  line[0] != current:
+                current = line[0]
+                positions.append( current)
+        positions.append("0")
+
+        pos = {}
+        for i in range(0, len(positions) - 1):
+            pos[positions[i]] = ( int(positions[i]), int(positions[i+1]))
+
+        return pos
 
 
     def __read_all_lines_from_bz2(self, filename):
@@ -129,6 +157,56 @@ class Wikidata:
         # all sub classes
         return list( articles)
 
+
+    def read_wikipedia_article(self, name):
+        """
+        Read the xml for the wikipedia article
+        Parts of the code come from: https://data-and-the-world.onrender.com/posts/read-wikipedia-dump/
+        :param url: wikipedia url
+        :return:
+        """
+
+        if not name in self.wikindex:
+            print(f"Unknown article '{name}'")
+        else:
+            decomp = bz2.BZ2Decompressor()
+            with open( self.dump_file, 'rb') as file:
+                (start, end, articleid) = self.wikindex[name]
+                file.seek( start)  # Go to right position
+                read = file.read( end - start - 1 )
+                page_xml = decomp.decompress( read).decode()
+                return self.__get_article_from_xml( page_xml, articleid)
+
+
+    def url_to_name(self, url):
+        """
+        Translates a wikipedia url into a name
+        :param url:
+        :return:
+        """
+
+        parts = url.split("/")  # last part of url
+        name = parts[len(parts)-1]
+        name = name.replace("_", " ")
+
+        return name
+
+
+    def __get_article_from_xml(self, xml, articleid):
+        """
+        Read the article from the page xml
+        :param xml:
+        :param articleid:
+        :return:
+        """
+
+        doc = ET.fromstring( "<doc>" + xml + "</doc>")
+        for page in doc.findall("page"):
+            id = int(page.find("id").text)
+            if( id == articleid):
+                return ET.tostring( page)
+
+        return "" # not found
 
 
     @staticmethod

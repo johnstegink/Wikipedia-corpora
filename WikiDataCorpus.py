@@ -3,6 +3,7 @@
 
 import sys,argparse
 from Wikidata import Wikidata
+import os
 
 # Constants
 wikidata_enpoint = "https://query.wikidata.org/sparql"
@@ -44,5 +45,16 @@ if __name__ == '__main__':
     urls = wikidata.read_all_items()
     if output == "" or output is None:
         print( len(urls))
+    else:
+        for url in urls:
+            lemma = wikidata.url_to_name( url)
+            xml = wikidata.read_wikipedia_article( lemma)
+            filename = os.path.join( output, f"{lemma}.xml")
+
+            file = open(filename, mode="w", encoding="utf-8")
+            file.write(xml)
+            file.close()
+
+
 
 
