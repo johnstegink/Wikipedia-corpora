@@ -5,7 +5,8 @@ import requests
 import os
 import bz2
 import pickle
-import xml.etree.ElementTree as ET
+import urllib.parse
+from lxml import etree as ET
 
 class Wikidata:
     max_number_of_ids_for_wbgetentities = 50  # Maximum number of IDs to be queried at once
@@ -188,6 +189,7 @@ class Wikidata:
         parts = url.split("/")  # last part of url
         name = parts[len(parts)-1]
         name = name.replace("_", " ")
+        name = urllib.parse.unquote( name)
 
         return name
 
@@ -204,9 +206,31 @@ class Wikidata:
         for page in doc.findall("page"):
             id = int(page.find("id").text)
             if( id == articleid):
-                return ET.tostring( page)
+                return self.__article_xml_to_text( page)
 
         return "" # not found
+
+
+    def __article_xml_to_text(self, page):
+        """
+        Retrieves the text from the page element
+        :param page:
+        :return:
+        """
+
+        article = ET.Element("article")
+
+        title = ET.Element("title")
+        title.text = page.find("title").text
+        article.append( title)
+
+        text = ET.Element("text")
+        text.text = page.find("revision").find("text").text
+        article.append( text)
+
+        return ET.tostring(article, encoding='unicode', method='xml', pretty_print=True)
+
+
 
 
     @staticmethod

@@ -48,12 +48,13 @@ if __name__ == '__main__':
     else:
         for url in urls:
             lemma = wikidata.url_to_name( url)
-            xml = wikidata.read_wikipedia_article( lemma)
-            filename = os.path.join( output, f"{lemma}.xml")
-
-            file = open(filename, mode="w", encoding="utf-8")
-            file.write(xml)
-            file.close()
+            if not lemma is None:
+                xml = wikidata.read_wikipedia_article( lemma)
+                filename = os.path.join( output, f"{lemma}.xml")
+                if not xml is None:
+                    file = open(filename, mode="w", encoding="utf-8")
+                    file.write( str(xml))
+                    file.close()
 
 
 
