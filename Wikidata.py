@@ -1,11 +1,11 @@
 # Class to read articles with the given subject from WikiData
 import re
 from WikiDataSparql import WDSparql
-import requests
 import os
 import bz2
 import pickle
 import urllib.parse
+import functions
 from lxml import etree as ET
 
 class Wikidata:
@@ -94,6 +94,8 @@ class Wikidata:
         return words
 
 
+
+
     def __read_from_to(self, lines):
         """
         returns a dictionary with a start position as a key and a tuple( start, end) as
@@ -130,14 +132,15 @@ class Wikidata:
 
         return text.split("\n")
 
+
     def read_all_items(self):
         """
-        Read al items from the given subject and return the ids
-        :return:
+        Read al items from the given subject and return the ids and the urls in a tuple
+        :return: (id, url, [properties])
         """
 
         query = f"""
-            SELECT ?article 
+            SELECT ?article ?item
             WHERE 
             {{
               VALUES ?subjects {{ {' '.join(self.subjects) } }} . 
@@ -147,16 +150,17 @@ class Wikidata:
               ?article schema:isPartOf <https://{self.language}.wikipedia.org/>
             }}                        
         """
-        items = self.wikidata.query( query, "read_all_items_" + self.uniqueid)
-        articles = set()
+        rows = self.wikidata.query( query, "read_all_items_" + self.uniqueid)
+        articles = []
 
         # Read items from results
-        for item in items:
-            article = item["article"]["value"]
-            articles.add( article)
+        for row in rows:
+            article = row["article"]["value"]
+            item = row["item"]["value"].replace('http://www.wikidata.org/entity/', 'wd:') # Just have the id
+            articles.append( (item, article) )
 
-        # all sub classes
-        return list( articles)
+        # all items and urls
+        return articles
 
 
     def read_wikipedia_article(self, name):
@@ -228,7 +232,7 @@ class Wikidata:
         text.text = page.find("revision").find("text").text
         article.append( text)
 
-        return ET.tostring(article, encoding='unicode', method='xml', pretty_print=True)
+        return functions.xml_as_string(article)
 
 
 

@@ -5,7 +5,7 @@ import requests
 import os
 import json
 import time
-
+import functions
 
 class WDSparql:
     """
@@ -34,12 +34,14 @@ class WDSparql:
         :param name: chache name
         :return: object with the data
         """
-        cache_file = os.path.join( self.cache_dir, f"{name}.json")
+
+        short = functions.hash_string(name)
+        cache_file = os.path.join( self.cache_dir, f"{short}.json")
         if not self.debug and os.path.isfile( cache_file):
-            results = self.__read_file( cache_file)
+            results = functions.read_file( cache_file)
         else:
             results = self.__perform_query( sparql)
-            self.__write_file( cache_file, results)
+            functions.write_file( cache_file, results)
 
         return json.loads(results)["results"]["bindings"]
 
@@ -70,29 +72,4 @@ class WDSparql:
 
 
 
-    def __read_file(self, filename):
-        """
-        Read entire text of file
-        :param filename: path to the file
-        :return: contents of file
-        """
-
-        file = open( filename, mode="r", encoding="utf-8")
-        contents = file.read()
-        file.close()
-
-        return contents
-
-
-    def __write_file(self, filename, contents):
-        """
-        Write text contents to a file
-        :param filename: path to the file
-        :param contents: textcontents
-        :return: -
-        """
-
-        file = open( filename, mode="w", encoding="utf-8")
-        file.write( contents)
-        file.close()
 

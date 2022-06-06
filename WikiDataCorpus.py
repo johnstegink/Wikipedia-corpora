@@ -2,7 +2,11 @@
 # run as: wikidatacorpus.py -s <subject> -o <outputdirectory>
 
 import sys,argparse
+
+import Sections
+import functions
 from Wikidata import Wikidata
+from Sections import Sections
 import os
 
 # Constants
@@ -36,25 +40,70 @@ def read_arguments():
     return (subjects,output, args["language"].lower())
 
 
+def save_article(wikidata, row, output):
+    """
+    Save the row (id, url). Retreive the text and the connections
+    :param row:
+    :param output: output directory
+    :return:
+    """
+
+    lemma = wikidata.url_to_name(row[1])
+    if not lemma is None:
+        xml = wikidata.read_wikipedia_article(lemma)
+        filename = os.path.join(output, f"{lemma}.xml")
+        if not xml is None:
+            functions.write_file(filename, str(xml))
+
+
+def step1(subjects, language, output):
+    """
+    Perform step1, extract data from Wikidata into xml files
+    :param subjects:
+    :param language:
+    :param output:
+    :return:
+    """
+    wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=subjects, dump_dir=wikipedia_dumpdir,
+                        language=language, debug=False)
+    rows = wikidata.read_all_items()
+    if output == "" or output is None:
+        print(len(rows))
+    else:
+        functions.create_directory_if_not_exists(output)
+        for row in rows:
+            save_article(wikidata, row, output)
+
+
+def step2( input_dir, output_dir):
+    """
+    Perform step2, splitting articles into sections
+    :param input_dir:
+    :param output_dir:
+    :return:
+    """
+    files = functions.read_all_files_from_directory(input_dir, "xml")
+    functions.create_directory_if_not_exists(output_dir)
+
+    for file in files:
+        contents = functions.read_file(file)
+        name = os.path.splitext(os.path.basename(file))[0]
+
+        sections = Sections( contents, name)
+        sections.create_sections( output_dir)
+
+
 
 # Main part of the script
 if __name__ == '__main__':
     (subjects, output, language) = read_arguments()
 
-    wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=subjects, dump_dir=wikipedia_dumpdir, language=language, debug=False)
-    urls = wikidata.read_all_items()
-    if output == "" or output is None:
-        print( len(urls))
-    else:
-        for url in urls:
-            lemma = wikidata.url_to_name( url)
-            if not lemma is None:
-                xml = wikidata.read_wikipedia_article( lemma)
-                filename = os.path.join( output, f"{lemma}.xml")
-                if not xml is None:
-                    file = open(filename, mode="w", encoding="utf-8")
-                    file.write( str(xml))
-                    file.close()
+    # Read all data from wikipedia
+    # step1(subjects, language, os.path.join(output, "step1"))
+
+    # Split the articles into sections
+    step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+
 
 
 
