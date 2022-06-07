@@ -89,8 +89,8 @@ def step2( input_dir, output_dir):
         contents = functions.read_file(file)
         name = os.path.splitext(os.path.basename(file))[0]
 
-        sections = Sections( contents, name)
-        sections.create_sections( output_dir)
+        sections = Sections( contents, name, output_dir)
+        sections.create_sections()
 
 
 
