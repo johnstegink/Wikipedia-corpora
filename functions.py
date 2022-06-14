@@ -20,6 +20,10 @@ def create_directory_if_not_exists(dir_name):
     """
 
     os.makedirs( dir_name, exist_ok=True)
+    # delete all files
+    for file in read_all_files_from_directory( dir_name, "*"):
+        os.remove(file)
+
 
 
 def read_all_files_from_directory(dir_name, extension):
@@ -67,3 +71,4 @@ def xml_as_string(element):
     :return:
     """
     return ET.tostring(element, encoding='unicode', method='xml', pretty_print=True)
+

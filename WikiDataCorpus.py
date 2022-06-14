@@ -7,6 +7,7 @@ import Sections
 import functions
 from Wikidata import Wikidata
 from Sections import Sections
+from Links import Links
 import os
 
 # Constants
@@ -85,12 +86,26 @@ def step2( input_dir, output_dir):
     files = functions.read_all_files_from_directory(input_dir, "xml")
     functions.create_directory_if_not_exists(output_dir)
 
+    currentid = 1
     for file in files:
         contents = functions.read_file(file)
         name = os.path.splitext(os.path.basename(file))[0]
 
-        sections = Sections( contents, name, output_dir)
+        sections = Sections( contents, currentid, output_dir)
         sections.create_sections()
+        currentid += 1
+
+def createLinkFile( input_dir, linkfile):
+    """
+    Creates a tsv file with links from one ID to another
+    :param input_dir:
+    :param linkfile:
+    :return:
+    """
+
+    files = functions.read_all_files_from_directory(input_dir, "xml")
+    links = Links( files)
+    (name_to_id, links_in_id) = links.read_names_and_links()
 
 
 
@@ -102,8 +117,10 @@ if __name__ == '__main__':
     # step1(subjects, language, os.path.join(output, "step1"))
 
     # Split the articles into sections
-    step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+    # step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
 
+    # Create a link file based on the input
+    createLinkFile(os.path.join(output, "step2"), os.path.join(output, "step2", "links.tsv"))
 
 
 

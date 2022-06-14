@@ -6,7 +6,7 @@ import re
 import wikitextparser as wtp
 
 class Sections:
-    def __init__(self, contents, name, output_dir ):
+    def __init__(self, contents, id, output_dir ):
         """
         Create a sections object
         :param contents: Xml contents
@@ -16,22 +16,37 @@ class Sections:
 
         self.xml = ET.fromstring( contents)
         self.contents = contents
-        self.name = name
+        self.id = id
+        self.name = f"{id:05}"
         self.output_dir = output_dir
 
 
     def __get_tekst(self, part):
         """
-        Get the plain text and puts it in the text element
+        Gets the plain text
         :param part:
         :return:
         """
-        text = part.plain_text().replace("==", " ")
+        text = part.plain_text().replace("=", " ")
 
         elem = ET.Element("text")
         elem.text = text
 
+        return text.strip()
+
+
+    def __get_node(self, name, contents):
+        """
+        Creates a node with the given name and contents
+        :param name:
+        :param contents:
+        :return:
+        """
+        elem = ET.Element(name)
+        elem.text = contents
+
         return elem
+
 
 
     def __get_links(self, part):
@@ -50,18 +65,36 @@ class Sections:
         return linksElem
 
 
-    def __save_xml(self, part, suffix):
+    def __save_xml(self, part, id, title, subid):
         """
-        Create the xml and save it a file with the given suffix, can be empty
+        Create the xml and save it a file with the given id
         :param part:
-        :param suffix:
+        :param id:
+        :param title:
+        :param use_subtitle:
         :return:
         """
+        text = self.__get_tekst( part)
+        subtitle = ""
+
+        # Split the text into a subtitle and text if neccesairy
+        if subid == 1:
+            subtitle = "introduction"
+        elif subid > 1:
+            text_parts = text.partition("\n")
+            if len( text_parts) > 1:
+                subtitle = text_parts[0].strip()
+                text = "\n".join( text_parts[1:]).strip()
+
+
         doc = ET.Element("doc")
-        doc.append( self.__get_tekst( part))
+        doc.append( self.__get_node( "title", title))
+        doc.append( self.__get_node( "subtitle", subtitle))
+        doc.append( self.__get_node( "id", id))
+        doc.append( self.__get_node( "text", text))
         doc.append( self.__get_links( part))
 
-        filename = os.path.join( self.output_dir, f"{self.name}{suffix}.xml")
+        filename = os.path.join( self.output_dir, f"{id}.xml")
         functions.write_file(filename, functions.xml_as_string(doc))
 
 
@@ -74,12 +107,14 @@ class Sections:
         """
 
         text = self.xml.find("text").text
+        title = self.xml.find("title").text
         page = wtp.parse( text)
 
-        self.__save_xml(page,"")
+        self.__save_xml(page, self.name, title, 0)
 
         id_counter = 1
         for section in page.sections:
-            self.__save_xml(section, str(id_counter))
+            id = f"{self.name}_{id_counter:02}"
+            self.__save_xml(section, id, title, id_counter)
             id_counter += 1
 
