@@ -1,0 +1,34 @@
+<doc id="00009">
+    <title>Title of the document</title>
+    <keys>
+        <key>Keyword 1</key>
+        <key>Keyword 2</key>
+    </keys>
+    <links>
+        <link id="09987" />
+        <link id="33322" />
+        <link id="12223" />
+    </links>
+    <text>Tekst before the first section</text>
+    <section id="00009_1">
+        <title>Title of the section</title>
+        <keys>
+            <key>Keyword 1</key>
+        </keys>
+        <links>
+            <link id="09987" />
+        </links>
+        <text>Text of the section</text>
+    </section>
+    <section id="00009_2">
+        <title>Title of the section</title>
+        <keys>
+            <key>Keyword 2</key>
+        </keys>
+        <links>
+            <link id="33322" />
+            <link id="12223" />
+        </links>
+        <text>Text of the section</text>
+    </section>
+</doc>
