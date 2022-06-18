@@ -95,7 +95,7 @@ def step2( input_dir, output_dir):
         sections.create_sections()
         currentid += 1
 
-def createLinkFile( input_dir, linkfile):
+def step3( input_dir, output_dir):
     """
     Creates a tsv file with links from one ID to another
     :param input_dir:
@@ -117,10 +117,10 @@ if __name__ == '__main__':
     # step1(subjects, language, os.path.join(output, "step1"))
 
     # Split the articles into sections
-    # step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+    step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
 
     # Create a link file based on the input
-    createLinkFile(os.path.join(output, "step2"), os.path.join(output, "step2", "links.tsv"))
+    step3(os.path.join(output, "step2"), os.path.join(output, "step2", "links.tsv"))
 
 
 

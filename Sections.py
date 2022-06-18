@@ -49,53 +49,32 @@ class Sections:
 
 
 
-    def __get_links(self, part):
+    def __get_keys(self, part):
         """
-        Returns a list of links to other articles
+        Returns a list of links to other articles that can be used as keys for this article
         :param part:
         :return:
         """
 
-        linksElem = ET.Element("links")
+        keys = ET.Element("links")
         for link in part.wikilinks:
-            linkElem = ET.Element("link")
-            linkElem.text = link.target
-            linksElem.append( linkElem)
+            ET.SubElement( keys, "key").text = link.target
 
-        return linksElem
+        return keys
 
 
-    def __save_xml(self, part, id, title, subid):
+
+    def __split_text_and_title(self, text):
         """
-        Create the xml and save it a file with the given id
-        :param part:
-        :param id:
-        :param title:
-        :param use_subtitle:
-        :return:
+        Splits the text and title, the title is the first line of the document
+        :return: (title, text)
         """
-        text = self.__get_tekst( part)
-        subtitle = ""
 
-        # Split the text into a subtitle and text if neccesairy
-        if subid == 1:
-            subtitle = "introduction"
-        elif subid > 1:
-            text_parts = text.partition("\n")
-            if len( text_parts) > 1:
-                subtitle = text_parts[0].strip()
-                text = "\n".join( text_parts[1:]).strip()
-
-
-        doc = ET.Element("doc")
-        doc.append( self.__get_node( "title", title))
-        doc.append( self.__get_node( "subtitle", subtitle))
-        doc.append( self.__get_node( "id", id))
-        doc.append( self.__get_node( "text", text))
-        doc.append( self.__get_links( part))
-
-        filename = os.path.join( self.output_dir, f"{id}.xml")
-        functions.write_file(filename, functions.xml_as_string(doc))
+        text_parts = text.partition("\n")
+        if len(text_parts) > 1:
+            return (text_parts[0].strip(), "\n".join(text_parts[1:]).strip())
+        else: # No room for a title
+            return ("", text)
 
 
 
@@ -110,11 +89,31 @@ class Sections:
         title = self.xml.find("title").text
         page = wtp.parse( text)
 
-        self.__save_xml(page, self.name, title, 0)
+        # The main part of the Xml
+        doc = ET.Element("doc", attrib={"id": self.name})
+        ET.SubElement( doc, "title").text = title
+        doc.append( self.__get_keys(page))
+        ET.SubElement(doc, "links")
 
+        # Now per section
         id_counter = 1
         for section in page.sections:
-            id = f"{self.name}_{id_counter:02}"
-            self.__save_xml(section, id, title, id_counter)
+            section_elem = ET.SubElement( doc, "section", attrib={"id": f"{id_counter:02}"})
+
+            if( id_counter > 1): # Split if this is not the first section
+                (section_title, section_text) = self.__split_text_and_title( section.plain_text())
+            else:
+                section_title = ""
+                section_text = section.plain_text()
+
+            ET.SubElement(doc, "title").text = section_title
+            doc.append(self.__get_keys(section))
+            ET.SubElement(doc, "links")
+            ET.SubElement(doc, "text").text = section_text
+
             id_counter += 1
+
+        # Write the xml
+        filename = os.path.join( self.output_dir, f"{self.name}.xml")
+        functions.write_file(filename, functions.xml_as_string(doc))
 

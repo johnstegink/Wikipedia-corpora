@@ -6,7 +6,6 @@
                 <xs:element ref="title"/>
                 <xs:element ref="keys"/>
                 <xs:element ref="links"/>
-                <xs:element ref="text"/>
                 <xs:element maxOccurs="unbounded" ref="section"/>
             </xs:sequence>
             <xs:attribute name="id" use="required" type="xs:integer"/>
