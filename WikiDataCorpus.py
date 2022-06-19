@@ -103,9 +103,12 @@ def step3( input_dir, output_dir):
     :return:
     """
 
+    functions.create_directory_if_not_exists(output_dir)
     files = functions.read_all_files_from_directory(input_dir, "xml")
+
     links = Links( files)
-    (name_to_id, links_in_id) = links.read_names_and_links()
+    links.read_links()
+    links.save_distance(output_dir)
 
 
 
@@ -117,10 +120,10 @@ if __name__ == '__main__':
     # step1(subjects, language, os.path.join(output, "step1"))
 
     # Split the articles into sections
-    step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+    # step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
 
     # Create a link file based on the input
-    step3(os.path.join(output, "step2"), os.path.join(output, "step2", "links.tsv"))
+    step3(os.path.join(output, "step2"), os.path.join(output, "step3"))
 
 
 

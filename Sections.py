@@ -56,7 +56,7 @@ class Sections:
         :return:
         """
 
-        keys = ET.Element("links")
+        keys = ET.Element("keys")
         for link in part.wikilinks:
             ET.SubElement( keys, "key").text = link.target
 
@@ -93,7 +93,6 @@ class Sections:
         doc = ET.Element("doc", attrib={"id": self.name})
         ET.SubElement( doc, "title").text = title
         doc.append( self.__get_keys(page))
-        ET.SubElement(doc, "links")
 
         # Now per section
         id_counter = 1
@@ -108,7 +107,6 @@ class Sections:
 
             ET.SubElement(doc, "title").text = section_title
             doc.append(self.__get_keys(section))
-            ET.SubElement(doc, "links")
             ET.SubElement(doc, "text").text = section_text
 
             id_counter += 1

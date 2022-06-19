@@ -4,7 +4,6 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="title"/>
-                <xs:element ref="keys"/>
                 <xs:element ref="links"/>
                 <xs:element maxOccurs="unbounded" ref="section"/>
             </xs:sequence>
@@ -15,11 +14,11 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="title"/>
-                <xs:element ref="keys"/>
                 <xs:element ref="links"/>
                 <xs:element ref="text"/>
             </xs:sequence>
-            <xs:attribute name="id" use="required" type="xs:NMTOKEN"/>
+            <xs:attribute name="id" use="required" type="xs:integer"/>
+            <xs:attribute name="subid" use="optional" type="xs:integer"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="title" type="xs:string"/>
@@ -41,6 +40,7 @@
     <xs:element name="link">
         <xs:complexType>
             <xs:attribute name="id" use="required" type="xs:integer"/>
+            <xs:attribute name="subid" use="optional" type="xs:integer"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="text" type="xs:string"/>
