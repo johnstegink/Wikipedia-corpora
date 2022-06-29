@@ -58,7 +58,8 @@ class Sections:
 
         keys = ET.Element("keys")
         for link in part.wikilinks:
-            ET.SubElement( keys, "key").text = link.target
+            if not ":" in link:
+                ET.SubElement( keys, "key").text = link.target
 
         return keys
 
@@ -82,7 +83,7 @@ class Sections:
         """
         Create sections into the output dir
         :param output_dir:
-        :return:
+        :return: the number of sections without the main section
         """
 
         text = self.xml.find("text").text
@@ -105,9 +106,9 @@ class Sections:
                 section_title = ""
                 section_text = section.plain_text()
 
-            ET.SubElement(doc, "title").text = section_title
-            doc.append(self.__get_keys(section))
-            ET.SubElement(doc, "text").text = section_text
+            ET.SubElement(section_elem, "title").text = section_title
+            section_elem.append(self.__get_keys(section))
+            ET.SubElement(section_elem, "text").text = section_text
 
             id_counter += 1
 
@@ -115,3 +116,4 @@ class Sections:
         filename = os.path.join( self.output_dir, f"{self.name}.xml")
         functions.write_file(filename, functions.xml_as_string(doc))
 
+        return id_counter - 1 # The number of sections, without the main section

@@ -78,13 +78,17 @@ def step1(subjects, language, output):
 
 def step2( input_dir, output_dir):
     """
-    Perform step2, splitting articles into sections
+    Perform step2, splitting articles into sections, and returns statistics in a tuple
     :param input_dir:
     :param output_dir:
-    :return:
+    :return: (articles, with_sections, with_sections, without_sections, total_sections)
     """
     files = functions.read_all_files_from_directory(input_dir, "xml")
     functions.create_directory_if_not_exists(output_dir)
+
+    total_sections = 0
+    total_articles_with_sections = 0
+    total_articles_without_sections = 0
 
     currentid = 1
     for file in files:
@@ -92,10 +96,19 @@ def step2( input_dir, output_dir):
         name = os.path.splitext(os.path.basename(file))[0]
 
         sections = Sections( contents, currentid, output_dir)
-        sections.create_sections()
+        number_of_sections = sections.create_sections()
+        total_sections += number_of_sections
+        if( number_of_sections > 0):
+            total_articles_with_sections += 1
+        else:
+            total_articles_without_sections += 1
+
         currentid += 1
 
-def step3( input_dir, output_dir):
+    return( currentid - 1, total_articles_with_sections, total_articles_without_sections, total_sections)
+
+
+def step3( input_dir, output_dir, treshold):
     """
     Creates a tsv file with links from one ID to another
     :param input_dir:
@@ -107,8 +120,9 @@ def step3( input_dir, output_dir):
     files = functions.read_all_files_from_directory(input_dir, "xml")
 
     links = Links( files)
-    links.read_links()
-    links.save_distance(output_dir)
+    articles = links.read_article_set()
+    links.read_links( articles)
+    links.save_distance(output_dir, treshold)
 
 
 
@@ -117,13 +131,23 @@ if __name__ == '__main__':
     (subjects, output, language) = read_arguments()
 
     # Read all data from wikipedia
-    # step1(subjects, language, os.path.join(output, "step1"))
+    step1(subjects, language, os.path.join(output, "step1"))
 
     # Split the articles into sections
-    # step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+    (articles, with_sections, without_sections, total_sections) = step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+
+    # Write the statistics
+    stats_file = os.path.join(output, "stats.txt")
+    functions.write_file(stats_file, f"Number of articles               : {articles}" +
+                                     f"Number articles with sections    : {with_sections}" +
+                                     f"Total number of sections         : {total_sections}" +
+                                     f"Number articles without sections : {without_sections}" +
+                                     f"Percentage articles with sections: {(articles / with_sections):0.2f}"
+                         );
+
 
     # Create a link file based on the input
-    step3(os.path.join(output, "step2"), os.path.join(output, "step3"))
+    step3(os.path.join(output, "step2"), os.path.join(output, "step3"), 0.5)
 
 
 

@@ -85,7 +85,7 @@ class Wikidata:
         # Loop through all lines
         for line in lines_in_parts:
             if len( line) == 3:  ## Only valid lines
-                word = line[2]
+                word = line[2].replace("&amp;", "&")
                 if not word in words:
                     seekpos = line[0]
                     articleid = int( line[1])
@@ -145,7 +145,7 @@ class Wikidata:
             {{
               VALUES ?subjects {{ {' '.join(self.subjects) } }} . 
               ?class wdt:P279* ?subjects .
-              ?item wdt:P31 ?class. 
+              ?item ?relatie ?class. 
               ?article schema:about ?item.
               ?article schema:isPartOf <https://{self.language}.wikipedia.org/>
             }}                        
