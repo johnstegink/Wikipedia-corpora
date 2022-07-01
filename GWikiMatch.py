@@ -20,18 +20,24 @@ class GWikiMatch:
 
 
     def __read_data(self, dir):
+        """
+        Read data from the chache file, if it not exists it will be created
+        :param dir: directory with GWikiMatch data
+        :return: list of tuples with WikiDataIds (source, destination, class)
+        """
         chache_file = os.path.join(dir, "cache.txt")
         self.info = []
 
         if not os.path.exists( chache_file):
             self.__create_cache_file(chache_file, dir)
 
+        info = []
         for line in functions.read_file(chache_file).split("\n"):
             fields = line.split("\t")
             if len(fields) == 3:
-                positive = fields[0] == "1"
-                self.info.append((fields[1], fields[2], positive))
+                info.append((fields[0], fields[1], fields[2]))
 
+        return info
 
 
     def __create_cache_file(self, chache_file, dir):
@@ -47,7 +53,7 @@ class GWikiMatch:
         lines = []
         for datum in data:
             if datum[0] in translation and datum[1] in translation:
-                lines.append(f"{translation[datum[0]]}\t{translation[datum[1]]}\t{'1' if datum[2] else '0' }")
+                lines.append(f"{translation[datum[0]]}\t{translation[datum[1]]}\t{datum[2]}")
 
         functions.write_file(chache_file, "\n".join(lines))
         print("Done.")
@@ -64,8 +70,7 @@ class GWikiMatch:
         for line in functions.read_file(file).split("\n"):
             fields = line.split("\t")
             if len(fields) == 3:
-                positive = fields[0] == "1"
-                info.append( (fields[1], fields[2], positive))
+                info.append( (fields[1], fields[2], fields[2]))
 
         return info
 
@@ -144,4 +149,20 @@ class GWikiMatch:
             translation.append( (url, id))
 
         return translation
+
+
+    def create_filtered_file(self, file, ids):
+        """
+        Creates a file with all relations from the given ids
+        :param file: the file to be created
+        :param ids: set with ids to be used for filtered
+        :return: nothing
+        """
+
+        lines = []
+        for info in self.info:
+            if info[0] in ids and info[1] in ids:
+                lines.append(f"{info[0]}\t{info[1]}\t{info[2]}")
+
+        functions.write_file(file, "\n".join(lines))
 

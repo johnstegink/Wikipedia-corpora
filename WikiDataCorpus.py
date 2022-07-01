@@ -156,26 +156,25 @@ if __name__ == '__main__':
     (subjects, output, language) = read_arguments()
 
     # Read all data from wikipedia
-    # step1(subjects, language, os.path.join(output, "step1"))
+    step1(subjects, language, os.path.join(output, "step1"))
 
-    # # Split the articles into sections
-    # (articles, with_sections, without_sections, total_sections) = step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
-    #
-    # # Write the statistics
-    # stats_file = os.path.join(output, "stats.txt")
-    # functions.write_file(stats_file, f"Number of articles               : {articles}" +
-    #                                  f"Number articles with sections    : {with_sections}" +
-    #                                  f"Total number of sections         : {total_sections}" +
-    #                                  f"Number articles without sections : {without_sections}" +
-    #                                  f"Percentage articles with sections: {(articles / with_sections):0.2f}"
-    #                      );
-    #
-    #
-    # # Create a link file based on the input
-    # step3(os.path.join(output, "step2"), os.path.join(output, "step3"), 0.3)
+    # Split the articles into sections
+    (articles, with_sections, without_sections, total_sections) = step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
 
+    # Write the statistics
+    stats_file = os.path.join(output, "stats.txt")
+    functions.write_file(stats_file, f"Number of articles               : {articles}" +
+                                     f"Number articles with sections    : {with_sections}" +
+                                     f"Total number of sections         : {total_sections}" +
+                                     f"Number articles without sections : {without_sections}" +
+                                     f"Percentage articles with sections: {(articles / with_sections):0.2f}"
+                         );
+
+
+    # Create a link file based on the input
+    step3(os.path.join(output, "step2"), os.path.join(output, "step3"), 0.3)
+
+    ids = [ os.path.basename( file).replace(".xml", "") for file in functions.read_all_files_from_directory( os.path.join(output, "step1"), "xml")]
     wikimatch = GWikiMatch(dir=gwikimatch_dir, wikidata_endpoint=wikidata_enpoint, debug=False)
-
-    a = 0
-
+    wikimatch.create_filtered_file( os.path.join(output, "gwikimatch.tsv"), set(ids))
 
