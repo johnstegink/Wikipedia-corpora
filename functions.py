@@ -72,3 +72,12 @@ def xml_as_string(element):
     """
     return ET.tostring(element, encoding='unicode', method='xml', pretty_print=True)
 
+def create_chunks_of_list(theList, chunk_size):
+    """
+    Splits a list into lists with chunks
+    :param theList:
+    "param chunk_size
+    :return:
+    """
+
+    return [theList[i:i + chunk_size] for i in range(0, len(theList), chunk_size)]

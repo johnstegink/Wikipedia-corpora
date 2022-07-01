@@ -41,7 +41,11 @@ class WDSparql:
             results = functions.read_file( cache_file)
         else:
             results = self.__perform_query( sparql)
-            functions.write_file( cache_file, results)
+
+            # Add the sparql query
+            as_json = json.loads(results)
+            as_json["sparq"] = sparql
+            functions.write_file( cache_file, json.dumps(as_json))
 
         return json.loads(results)["results"]["bindings"]
 

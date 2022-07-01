@@ -78,7 +78,7 @@ class Wikidata:
         :return:
         """
         lines = self.__read_all_lines_from_bz2( index_file)
-        lines_in_parts = [line.split(':') for line in lines]
+        lines_in_parts = [line.split(':', 2) for line in lines]
         pos = self.__read_from_to( lines_in_parts)
 
         words = {}
@@ -163,7 +163,7 @@ class Wikidata:
         return articles
 
 
-    def read_wikipedia_article(self, name):
+    def read_wikipedia_article(self, wikidata_id, name):
         """
         Read the xml for the wikipedia article
         Parts of the code come from: https://data-and-the-world.onrender.com/posts/read-wikipedia-dump/
@@ -180,7 +180,7 @@ class Wikidata:
                 file.seek( start)  # Go to right position
                 read = file.read( end - start - 1 )
                 page_xml = decomp.decompress( read).decode()
-                return self.__get_article_from_xml( page_xml, articleid)
+                return self.__get_article_from_xml(page_xml, articleid, wikidata_id)
 
 
     def url_to_name(self, url):
@@ -198,11 +198,12 @@ class Wikidata:
         return name
 
 
-    def __get_article_from_xml(self, xml, articleid):
+    def __get_article_from_xml(self, xml, articleid, wikidata_id):
         """
         Read the article from the page xml
         :param xml:
         :param articleid:
+        :param id: wikidataid
         :return:
         """
 
@@ -210,12 +211,12 @@ class Wikidata:
         for page in doc.findall("page"):
             id = int(page.find("id").text)
             if( id == articleid):
-                return self.__article_xml_to_text( page)
+                return self.__article_xml_to_text( page, wikidata_id)
 
         return "" # not found
 
 
-    def __article_xml_to_text(self, page):
+    def __article_xml_to_text(self, page, wikidata_id):
         """
         Retrieves the text from the page element
         :param page:
@@ -224,13 +225,9 @@ class Wikidata:
 
         article = ET.Element("article")
 
-        title = ET.Element("title")
-        title.text = page.find("title").text
-        article.append( title)
-
-        text = ET.Element("text")
-        text.text = page.find("revision").find("text").text
-        article.append( text)
+        ET.SubElement( article, "id").text = wikidata_id
+        ET.SubElement(article, "title").text = page.find("title").text
+        ET.SubElement(article, "text").text = page.find("revision").find("text").text
 
         return functions.xml_as_string(article)
 

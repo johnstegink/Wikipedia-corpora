@@ -42,13 +42,13 @@ class Links:
         distances = []
         is_section = "_" in id
 
-        for other in self.keys_in_id.keys():
+        for other in self.links_for_id.keys():
             # Compare sections with sections and articles with articles
             if (is_section and "_" in other) or (not is_section and not "_" in other):
                 # Don't compare to yourself
                 if other != id  and not other.startswith(id + "_")  and not id.startswith(other + "_"):
 
-                    index = self.__jaccard(self.keys_in_id[id], self.keys_in_id[other])
+                    index = self.__jaccard(self.links_for_id[id], self.links_for_id[other])
                     if( index > 0):
                         distances.append( (other, index))
 
@@ -90,50 +90,76 @@ class Links:
         # return set(keys).intersection(articles)
 
 
-    def read_article_set(self):
+    def read_name_id(self):
         """
-        Creates a set of all article titles
+        Creates translation of name to id
         :return: a set with all (lowercase) titles
         """
-        articles = set()
+
+        name_id = {}
         for file in self.files:
             xml = ET.parse(file)
             doc = xml.getroot()
             title = doc.find("title").text
-            articles.add(  title.lower())
+            name_id[title.lower()] = doc.attrib["id"]
 
-        return articles
+        return name_id
 
 
-    def read_links(self, articles):
+    def add_links_to_document(self, id, name, links, name_id):
+        if not id in self.links_for_id:
+            self.links_for_id[id] = set()
+
+        self.links_for_id[id].union( links)
+
+        # add links back to the original
+        for link in links:
+            if link in name_id:
+                link_id = name_id[link]
+                if not link_id in self.links_for_id:
+                    self.links_for_id[link_id] = set()
+
+                self.links_for_id[link_id].add(name)
+
+
+
+    def read_links(self, name_id):
         """
         Returns a dictionary with all keys from the file and the sections
         outgoing hyperlinks
         """
 
-        self.keys_in_id = {}
+        articles = set( name_id.keys())
+        self.links_for_id = {}
         for file in self.files:
             xml = ET.parse(file)
-
-            # First the document
             doc = xml.getroot()
             id = doc.attrib["id"]
-            self.keys_in_id[id] = self.__read_info( doc, articles)
 
-            # Then the sections
+            doc_links = set()
+            # The sections
             for section_elem in doc.iter("section"):
                 subid = section_elem.attrib["id"]
-                self.keys_in_id[id + "_" + subid] = self.__read_info( section_elem, articles)
+                links = self.__read_info( section_elem, articles)
+                doc_links = doc_links.union( set(links))
+                self.links_for_id[id + "_" + subid] = links
+
+            # The document
+            name = doc.find("title").text
+            self.add_links_to_document(id, name, doc_links, name_id)
 
 
-    def save_distance(self, output_dir, treshold):
+
+    def save_distance(self, output_dir, treshold, first_file_index, last_file_index):
         """
         Save the links and the distances in a new file with the keys removed and the links added
         :param output:
         :return:
         """
 
-        for file in self.files:
+        last = min( last_file_index, len(self.files) - 1)
+        for i in range( first_file_index, last + 1):
+            file = self.files[i]
             xml = ET.parse(file)
             doc = xml.getroot()
 

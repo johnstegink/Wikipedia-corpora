@@ -1,18 +1,23 @@
 # Script to create a corpus based on wikipedia.
 # run as: wikidatacorpus.py -s <subject> -o <outputdirectory>
-
+import math
 import sys,argparse
+import threading
 
 import Sections
 import functions
 from Wikidata import Wikidata
 from Sections import Sections
+from GWikiMatch import GWikiMatch
 from Links import Links
 import os
 
 # Constants
 wikidata_enpoint = "https://query.wikidata.org/sparql"
+number_of_threads = 8
 wikipedia_dumpdir = "../../WikipediaDump"
+gwikimatch_dir = "GWikiMatch"
+
 
 def read_arguments():
     """
@@ -41,7 +46,7 @@ def read_arguments():
     return (subjects,output, args["language"].lower())
 
 
-def save_article(wikidata, row, output):
+def save_article(wikidata, wikidata_id, name, output):
     """
     Save the row (id, url). Retreive the text and the connections
     :param row:
@@ -49,10 +54,11 @@ def save_article(wikidata, row, output):
     :return:
     """
 
-    lemma = wikidata.url_to_name(row[1])
+    lemma = wikidata.url_to_name(name)
+    id = wikidata_id.replace("wd:", "")
     if not lemma is None:
-        xml = wikidata.read_wikipedia_article(lemma)
-        filename = os.path.join(output, f"{lemma}.xml")
+        xml = wikidata.read_wikipedia_article(id, lemma)
+        filename = os.path.join(output, id + ".xml")
         if not xml is None:
             functions.write_file(filename, str(xml))
 
@@ -73,7 +79,7 @@ def step1(subjects, language, output):
     else:
         functions.create_directory_if_not_exists(output)
         for row in rows:
-            save_article(wikidata, row, output)
+            save_article(wikidata, wikidata_id=row[0], name=row[1], output=output)
 
 
 def step2( input_dir, output_dir):
@@ -90,12 +96,12 @@ def step2( input_dir, output_dir):
     total_articles_with_sections = 0
     total_articles_without_sections = 0
 
-    currentid = 1
+    counter = 1
     for file in files:
         contents = functions.read_file(file)
         name = os.path.splitext(os.path.basename(file))[0]
 
-        sections = Sections( contents, currentid, output_dir)
+        sections = Sections( contents, name, output_dir)
         number_of_sections = sections.create_sections()
         total_sections += number_of_sections
         if( number_of_sections > 0):
@@ -103,9 +109,13 @@ def step2( input_dir, output_dir):
         else:
             total_articles_without_sections += 1
 
-        currentid += 1
+        counter += 1
 
-    return( currentid - 1, total_articles_with_sections, total_articles_without_sections, total_sections)
+    return( counter - 1, total_articles_with_sections, total_articles_without_sections, total_sections)
+
+
+def save_distance(links, output_dir, treshold, start_index, end_index):
+    links.save_distance(output_dir, treshold, start_index, end_index)
 
 
 def step3( input_dir, output_dir, treshold):
@@ -120,9 +130,24 @@ def step3( input_dir, output_dir, treshold):
     files = functions.read_all_files_from_directory(input_dir, "xml")
 
     links = Links( files)
-    articles = links.read_article_set()
-    links.read_links( articles)
-    links.save_distance(output_dir, treshold)
+    name_id = links.read_name_id()
+    links.read_links( name_id)
+    links.save_distance(output_dir, treshold, 0, len(files))
+
+
+
+    # threads = []
+    # chunk_size = math.ceil( len(files) / number_of_threads)
+    # for thread_nr in range(0, number_of_threads):
+    #     thread = threading.Thread(target=save_distance, args=( links, output_dir, treshold, thread_nr * chunk_size, (thread_nr + 1) * chunk_size - 1))
+    #     threads.append(thread)
+    #
+    # for thread in threads:
+    #     thread.start()
+    #
+    # for thread in threads:
+    #     thread.join()
+
 
 
 
@@ -131,24 +156,26 @@ if __name__ == '__main__':
     (subjects, output, language) = read_arguments()
 
     # Read all data from wikipedia
-    step1(subjects, language, os.path.join(output, "step1"))
+    # step1(subjects, language, os.path.join(output, "step1"))
 
-    # Split the articles into sections
-    (articles, with_sections, without_sections, total_sections) = step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+    # # Split the articles into sections
+    # (articles, with_sections, without_sections, total_sections) = step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+    #
+    # # Write the statistics
+    # stats_file = os.path.join(output, "stats.txt")
+    # functions.write_file(stats_file, f"Number of articles               : {articles}" +
+    #                                  f"Number articles with sections    : {with_sections}" +
+    #                                  f"Total number of sections         : {total_sections}" +
+    #                                  f"Number articles without sections : {without_sections}" +
+    #                                  f"Percentage articles with sections: {(articles / with_sections):0.2f}"
+    #                      );
+    #
+    #
+    # # Create a link file based on the input
+    # step3(os.path.join(output, "step2"), os.path.join(output, "step3"), 0.3)
 
-    # Write the statistics
-    stats_file = os.path.join(output, "stats.txt")
-    functions.write_file(stats_file, f"Number of articles               : {articles}" +
-                                     f"Number articles with sections    : {with_sections}" +
-                                     f"Total number of sections         : {total_sections}" +
-                                     f"Number articles without sections : {without_sections}" +
-                                     f"Percentage articles with sections: {(articles / with_sections):0.2f}"
-                         );
+    wikimatch = GWikiMatch(dir=gwikimatch_dir, wikidata_endpoint=wikidata_enpoint, debug=False)
 
-
-    # Create a link file based on the input
-    step3(os.path.join(output, "step2"), os.path.join(output, "step3"), 0.5)
-
-
+    a = 0
 
 

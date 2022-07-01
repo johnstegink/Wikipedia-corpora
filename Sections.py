@@ -6,7 +6,7 @@ import re
 import wikitextparser as wtp
 
 class Sections:
-    def __init__(self, contents, id, output_dir ):
+    def __init__(self, contents, name, output_dir):
         """
         Create a sections object
         :param contents: Xml contents
@@ -16,8 +16,7 @@ class Sections:
 
         self.xml = ET.fromstring( contents)
         self.contents = contents
-        self.id = id
-        self.name = f"{id:05}"
+        self.name = f"{name:05}"
         self.output_dir = output_dir
 
 
