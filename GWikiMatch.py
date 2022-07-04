@@ -102,7 +102,6 @@ class GWikiMatch:
 
         return articles
 
-
     def __read_ids_of_articles(self, info):
         """
         Read all ids of the all articles
@@ -151,6 +150,37 @@ class GWikiMatch:
         return translation
 
 
+    def __get_urls_of_ids(self, ids, language, wikidata):
+        """
+        Performs a SPARQL query to translate the ids to corresponding wikipedia urls
+        :param  ids:
+        :return: list of tuples [(url,id)]
+        """
+
+        wikidataids = ["wd:" + id for id in ids]
+        query = f"""
+        SELECT ?article ?items WHERE {{
+          VALUES ?items {{
+            {" ".join(wikidataids)}
+          }}
+
+        ?article schema:about ?items.
+        ?article schema:isPartOf <https://{language}.wikipedia.org/>
+        }}
+        """
+        rows = wikidata.query(query, "translate_" + query)
+        translation = []
+
+        # Read items from results
+        for row in rows:
+            id = row["items"]["value"].replace('http://www.wikidata.org/entity/', '') # Just the ID
+            url = row["article"]["value"]
+            translation.append( (id,url))
+
+        return translation
+
+
+
     def create_filtered_file(self, file, ids):
         """
         Creates a file with all relations from the given ids
@@ -166,3 +196,22 @@ class GWikiMatch:
 
         functions.write_file(file, "\n".join(lines))
 
+
+
+
+    def get_all_articles_with_url(self, language):
+        """
+        returns a list of articles with the corresponding url in the language
+        :param language:
+        :return:  [(id, url)]
+        """
+
+        articles = self.__get_all_articles( self.info)
+        wikidata = WDSparql( "cache", self.wikidata_endpoint, self.debug)
+
+        with_url = []
+        for chunk in functions.create_chunks_of_list( list(articles), 50):
+            for row in self.__get_urls_of_ids(chunk, language, wikidata):
+                with_url.append( row)
+
+        return with_url

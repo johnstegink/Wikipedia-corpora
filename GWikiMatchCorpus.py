@@ -1,5 +1,5 @@
-# Script to create a corpus based on wikipedia.
-# run as: wikidatacorpus.py -s <subject> -o <outputdirectory>
+# Script to create a corpus based on gwikimatch
+# run as: gwikimatch.py -l <language> -o <outputdirectory>
 import math
 import sys,argparse
 import threading
@@ -14,6 +14,7 @@ import os
 
 # Constants
 wikidata_enpoint = "https://query.wikidata.org/sparql"
+number_of_threads = 8
 wikipedia_dumpdir = "../../WikipediaDump"
 gwikimatch_dir = "GWikiMatch"
 
@@ -21,28 +22,15 @@ gwikimatch_dir = "GWikiMatch"
 def read_arguments():
     """
     Read arguments from the command line
-    :return: (subject, outputdirectory, language)
+    :return: (outputdirectory, language)
     """
 
-    parser = argparse.ArgumentParser(description='Read articles from wikipedia based on WikiData option.')
-    parser.add_argument('-s', '--subjects', help='Main wikidata subjects', required=True)
+    parser = argparse.ArgumentParser(description='Read articles from wikipedia based on the gWikiDataset.')
     parser.add_argument('-l', '--language', help='Language code, for example "nl" or "en"', required=True, default="en")
-    parser.add_argument('-o', '--output', help='Output directory, when no output is given the count will be printed', required=False)
+    parser.add_argument('-o', '--output', help='Output directory', required=True)
     args = vars(parser.parse_args())
 
-
-    subjects = args["subjects"].split(",")
-    message = Wikidata.check_property(subjects)
-    if message != "":
-        print( message)
-        exit( 3)
-
-    if not "output" in args:
-        output = ""
-    else:
-        output = args["output"]
-
-    return (subjects,output, args["language"].lower())
+    return (args["output"], args["language"].lower())
 
 
 def save_article(wikidata, wikidata_id, name, output):
@@ -135,32 +123,25 @@ def step3( input_dir, output_dir, treshold):
 
 
 
+    # threads = []
+    # chunk_size = math.ceil( len(files) / number_of_threads)
+    # for thread_nr in range(0, number_of_threads):
+    #     thread = threading.Thread(target=save_distance, args=( links, output_dir, treshold, thread_nr * chunk_size, (thread_nr + 1) * chunk_size - 1))
+    #     threads.append(thread)
+    #
+    # for thread in threads:
+    #     thread.start()
+    #
+    # for thread in threads:
+    #     thread.join()
+
+
+
 
 # Main part of the script
 if __name__ == '__main__':
-    (subjects, output, language) = read_arguments()
+    (output, language) = read_arguments()
 
     wikimatch = GWikiMatch(dir=gwikimatch_dir, wikidata_endpoint=wikidata_enpoint, debug=False)
-
-    # Read all data from wikipedia
-    step1(subjects, language, os.path.join(output, "step1"))
-
-    # Split the articles into sections
-    (articles, with_sections, without_sections, total_sections) = step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
-
-    # Write the statistics
-    stats_file = os.path.join(output, "stats.txt")
-    functions.write_file(stats_file, f"Number of articles               : {articles}" +
-                                     f"Number articles with sections    : {with_sections}" +
-                                     f"Total number of sections         : {total_sections}" +
-                                     f"Number articles without sections : {without_sections}" +
-                                     f"Percentage articles with sections: {(articles / with_sections):0.2f}"
-                         );
-
-
-    # Create a link file based on the input
-    step3(os.path.join(output, "step2"), os.path.join(output, "step3"), 0.3)
-
-    ids = [ os.path.basename( file).replace(".xml", "") for file in functions.read_all_files_from_directory( os.path.join(output, "step1"), "xml")]
-    wikimatch.create_filtered_file( os.path.join(output, "gwikimatch.tsv"), set(ids))
+    articles = wikimatch.get_all_articles_with_url( language)
 
