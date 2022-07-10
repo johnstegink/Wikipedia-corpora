@@ -33,7 +33,7 @@ if __name__ == '__main__':
     functions.create_directory_if_not_exists(output)
 
     s2ORC = S2ORC(metadata=os.path.join(metadata, subject), pdf_parses=os.path.join(pdf_parses, subject))
-    s2ORC.convert_to_xml( output_dir=output)
+    s2ORC.convert_to_xml( output_dir=os.path.join(output, subject))
 
 
 
