@@ -40,10 +40,10 @@ class GWikiMatch:
         return info
 
 
-    def __create_cache_file(self, chache_file, dir):
+    def __create_cache_file(self, cache_file, dir):
         """
         Create a chache file with the url's translated to wikidata URLs
-        :param chache_file:
+        :param cache_file:
         :return:
         """
 
@@ -55,7 +55,7 @@ class GWikiMatch:
             if datum[0] in translation and datum[1] in translation:
                 lines.append(f"{translation[datum[0]]}\t{translation[datum[1]]}\t{datum[2]}")
 
-        functions.write_file(chache_file, "\n".join(lines))
+        functions.write_file(cache_file, "\n".join(lines))
         print("Done.")
 
 
@@ -201,17 +201,35 @@ class GWikiMatch:
 
     def get_all_articles_with_url(self, language):
         """
-        returns a list of articles with the corresponding url in the language
+        returns a list of articles with the corresponding url in the given language
         :param language:
         :return:  [(id, url)]
         """
 
-        articles = self.__get_all_articles( self.info)
+        articles = list( self.__get_all_articles( self.info))
+        articles.sort()
         wikidata = WDSparql( "cache", self.wikidata_endpoint, self.debug)
 
         with_url = []
-        for chunk in functions.create_chunks_of_list( list(articles), 50):
+        for chunk in functions.create_chunks_of_list( articles, 500):
             for row in self.__get_urls_of_ids(chunk, language, wikidata):
                 with_url.append( row)
 
         return with_url
+
+
+    def get_links_of_article(self, id):
+        """
+        Get all links belonging to an article
+        :param id:
+        :return: [(id, class)] where class = 0, 1 or 2
+        """
+
+        links = []
+        for record in self.info:
+            if record[0] == id:
+                links.append( (record[1], record[2]) )
+            elif record[1] == id:
+                links.append( (record[0], record[2]) )
+
+        return links

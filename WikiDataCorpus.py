@@ -101,7 +101,7 @@ def step2( input_dir, output_dir):
         name = os.path.splitext(os.path.basename(file))[0]
 
         sections = Sections( contents, name, output_dir)
-        number_of_sections = sections.create_sections()
+        number_of_sections = sections.create_sections(with_keys=True, links=[])
         total_sections += number_of_sections
         if( number_of_sections > 0):
             total_articles_with_sections += 1

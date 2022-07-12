@@ -83,6 +83,26 @@ class S2ORC:
         for link in link_set:
             ET.SubElement(links_node, "link").text = str(link)
 
+    def __resolve_links_section(self, section, bib_entries):
+        """
+        Resolves the links in the section text and removes the text of the link from the text
+        :param section:
+        :param bib_entries: All entries from the bibiography
+        :return: (text, links)      Cleaned text and resolved links
+        """
+
+        text = section["text"]
+        links = []
+        for cite in section["cite_spans"]:
+            cite_text = cite["text"]
+            ref_id = cite["ref_id"]
+            text = text.replace(cite_text, "")  # Remove the citation from the text
+            if (ref_id in bib_entries):
+                links.append(bib_entries[ref_id])
+                print( ref_id)
+
+        return (text, links)
+
 
 
     def __convert_info_to_xml(self, info, output_dir):
@@ -110,11 +130,10 @@ class S2ORC:
         section_id = 1
         for section in info["body_text"]:
             section_node = ET.SubElement(doc, "section", attrib={"id": id, "subid": str(section_id)})
-            ET.SubElement( section_node, "title").text = section["section"]
-            ET.SubElement( section_node, "text").text = section["text"]
+            (text, links) = self.__resolve_links_section(section, bib_entries)
 
-            # Indirect links, translate them via the bib_entries
-            links = [bib_entries[cite["ref_id"]] for cite in section["cite_spans"] if cite["ref_id"] in bib_entries]
+            ET.SubElement( section_node, "title").text = section["section"]
+            ET.SubElement( section_node, "text").text = text
             self.__create_link_node( section_node, links)
 
             section_id += 1
@@ -123,6 +142,7 @@ class S2ORC:
         # Write the xml
         filename = os.path.join( output_dir, f"{id}.xml")
         functions.write_file(filename, functions.xml_as_string(doc))
+
 
 
 

@@ -66,7 +66,7 @@ class Links:
         links = ET.SubElement(parent, "links")
         for distance in distances:
             if( distance[1] >= treshold):
-                link = ET.SubElement(links, "link", attrib={"id": distance[0], "index": str(distance[1])})
+                link = ET.SubElement(links, "link", attrib={"id": distance[0], "class": "1", "index": str(distance[1])})
 
         parent.append(links)
 

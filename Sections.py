@@ -50,7 +50,7 @@ class Sections:
 
     def __get_keys(self, part):
         """
-        Returns a list of links to other articles that can be used as keys for this article
+        Returns a list of links to other articles that can be used as keys for this article in the "keys" element
         :param part:
         :return:
         """
@@ -61,6 +61,21 @@ class Sections:
                 ET.SubElement( keys, "key").text = link.target
 
         return keys
+
+
+
+    def __get_links(self, links):
+        """
+        Returns a list of links to other articles in the "links" element
+        :param part:
+        :return:
+        """
+
+        links_elem = ET.Element("links")
+        for link in links:
+            ET.SubElement( links_elem, "link", attrib={"id": str(link[0]), "index": "", "class": str(link[1])})
+
+        return links_elem
 
 
 
@@ -78,10 +93,11 @@ class Sections:
 
 
 
-    def create_sections(self):
+    def create_sections(self, with_keys, links):
         """
         Create sections into the output dir
-        :param output_dir:
+        :param with_keys if True a document with keys (outlinks) is created otherwise the parameter links is used for the document
+        :param links  if with_keys is False the links will be added to the link section of the document and the section will have no links
         :return: the number of sections without the main section
         """
 
@@ -92,7 +108,10 @@ class Sections:
         # The main part of the Xml
         doc = ET.Element("doc", attrib={"id": self.name})
         ET.SubElement( doc, "title").text = title
-        doc.append( self.__get_keys(page))
+        if with_keys:
+            doc.append( self.__get_keys(page))
+        else:
+            doc.append( self.__get_links(links))
 
         # Now per section
         id_counter = 1
@@ -106,7 +125,10 @@ class Sections:
                 section_text = section.plain_text()
 
             ET.SubElement(section_elem, "title").text = section_title
-            section_elem.append(self.__get_keys(section))
+            if with_keys:
+                section_elem.append(self.__get_keys(section))
+            else:
+                section_elem.append(self.__get_links([]))
             ET.SubElement(section_elem, "text").text = section_text
 
             id_counter += 1

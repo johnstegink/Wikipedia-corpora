@@ -216,6 +216,7 @@ class Wikidata:
         return "" # not found
 
 
+
     def __article_xml_to_text(self, page, wikidata_id):
         """
         Retrieves the text from the page element

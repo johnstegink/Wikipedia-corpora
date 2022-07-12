@@ -1,22 +1,20 @@
 <doc id="00009">
     <title>Title of the document</title>
     <links>
-        <link id="09987" />
-        <link id="33322" />
-        <link id="12223" />
+        <link id="09987" index="0.566" class="1" />
+        <link id="33322" index="0.654" class="1"/>
+        <link id="12223" index="0.777" class="1"/>
     </links>
     <section id="00009" subid="1">
         <title>Title of the section</title>
         <links>
-            <link id="09987" />
+            <link id="09987" index="0.796" class="1" />
         </links>
         <text>Text of the section</text>
     </section>
     <section id="00009" subid="2">
         <title>Title of the section</title>
-        <keys>
-            <key>Keyword 2</key>
-        </keys>
+        <links />
         <text>Text of the section</text>
     </section>
 </doc>
