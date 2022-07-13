@@ -45,8 +45,9 @@ def save_article(wikidata, wikidata_id, name, links, output):
     id = wikidata_id.replace("wd:", "")
     if not lemma is None:
         xml = wikidata.read_wikipedia_article(id, lemma)
-        sections = Sections( contents=xml, name=name, output_dir=output)
-        sections.create_sections(with_keys=False, links=links)
+        if not xml is None:
+            sections = Sections( contents=xml)
+            sections.create_sections(with_keys=False, links=links, id=wikidata_id, output_dir=output)
 
 
 # Main part of the script
@@ -62,5 +63,5 @@ if __name__ == '__main__':
 
     functions.create_directory_if_not_exists(output)
     for article in articles:
-        links = GWikiMatch.get_links_of_article( id=article[0])
+        links = wikimatch.get_links_of_article( id=article[0])
         save_article(wikidata, wikidata_id=article[0], name=article[1], output=output, links=links)

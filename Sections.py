@@ -6,18 +6,14 @@ import re
 import wikitextparser as wtp
 
 class Sections:
-    def __init__(self, contents, name, output_dir):
+    def __init__(self, contents):
         """
         Create a sections object
         :param contents: Xml contents
-        :param name: Name of the file, without extension
-        :param output_dir:
         """
 
         self.xml = ET.fromstring( contents)
         self.contents = contents
-        self.name = f"{name:05}"
-        self.output_dir = output_dir
 
 
     def __get_tekst(self, part):
@@ -93,11 +89,13 @@ class Sections:
 
 
 
-    def create_sections(self, with_keys, links):
+    def create_sections(self, with_keys, links, id, output_dir):
         """
         Create sections into the output dir
         :param with_keys if True a document with keys (outlinks) is created otherwise the parameter links is used for the document
         :param links  if with_keys is False the links will be added to the link section of the document and the section will have no links
+        :param id
+        :param output_dir
         :return: the number of sections without the main section
         """
 
@@ -106,7 +104,7 @@ class Sections:
         page = wtp.parse( text)
 
         # The main part of the Xml
-        doc = ET.Element("doc", attrib={"id": self.name})
+        doc = ET.Element("doc", attrib={"id": id})
         ET.SubElement( doc, "title").text = title
         if with_keys:
             doc.append( self.__get_keys(page))
@@ -116,7 +114,7 @@ class Sections:
         # Now per section
         id_counter = 1
         for section in page.sections:
-            section_elem = ET.SubElement( doc, "section", attrib={"id": f"{id_counter:02}"})
+            section_elem = ET.SubElement( doc, "section", attrib={"id": f"{id}_{id_counter:02}"})
 
             if( id_counter > 1): # Split if this is not the first section
                 (section_title, section_text) = self.__split_text_and_title( section.plain_text())
@@ -134,7 +132,7 @@ class Sections:
             id_counter += 1
 
         # Write the xml
-        filename = os.path.join( self.output_dir, f"{self.name}.xml")
+        filename = os.path.join( output_dir, f"{id}.xml")
         functions.write_file(filename, functions.xml_as_string(doc))
 
         return id_counter - 1 # The number of sections, without the main section
