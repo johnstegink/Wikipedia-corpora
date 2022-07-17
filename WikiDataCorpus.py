@@ -24,10 +24,10 @@ def read_arguments():
     :return: (subject, outputdirectory, language)
     """
 
-    parser = argparse.ArgumentParser(description='Read articles from wikipedia based on WikiData option.')
-    parser.add_argument('-s', '--subjects', help='Main wikidata subjects', required=True)
+    parser = argparse.ArgumentParser(description='Read articles from Wikipedia based on the WikiData knowledge graph.')
+    parser.add_argument('-s', '--subjects', help='Main wikidata subjects, a comma seperated list of WikiData ids (for example "wd:Q7397")', required=True)
     parser.add_argument('-l', '--language', help='Language code, for example "nl" or "en"', required=True, default="en")
-    parser.add_argument('-o', '--output', help='Output directory, when no output is given the count will be printed', required=False)
+    parser.add_argument('-o', '--output', help='Output directory', required=False)
     args = vars(parser.parse_args())
 
 
@@ -142,11 +142,14 @@ if __name__ == '__main__':
 
     wikimatch = GWikiMatch(dir=gwikimatch_dir, wikidata_endpoint=wikidata_enpoint, debug=False)
 
+    step1_dir = os.path.join(output, "step1")
+    step2_dir = os.path.join(output, "step2")
+
     # Read all data from wikipedia
-    step1(subjects, language, os.path.join(output, "step1"))
+    step1(subjects, language, step1_dir)
 
     # Split the articles into sections
-    (articles, with_sections, without_sections, total_sections) = step2(os.path.join(output, "step1"), os.path.join(output, "step2"))
+    (articles, with_sections, without_sections, total_sections) = step2( step1_dir, step2_dir)
 
     # Write the statistics
     stats_file = os.path.join(output, "stats.txt")
@@ -159,8 +162,13 @@ if __name__ == '__main__':
 
 
     # Create a link file based on the input
-    step3(os.path.join(output, "step2"), os.path.join(output, "step3"), 0.3)
+    step3(input_dir=step2_dir, output_dir=output, treshold=0.5)
 
+    # Clean up
+    functions.remove_redirectory_recursivly( step1_dir)
+    functions.remove_redirectory_recursivly( step2_dir)
+
+    # Create a tsv file in the output with the links form gwikimatch
     ids = [ os.path.basename( file).replace(".xml", "") for file in functions.read_all_files_from_directory( os.path.join(output, "step1"), "xml")]
     wikimatch.create_filtered_file( os.path.join(output, "gwikimatch.tsv"), set(ids))
 

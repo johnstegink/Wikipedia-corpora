@@ -1,7 +1,9 @@
 import hashlib
 import os
+import shutil
 from pathlib import Path
 from lxml import etree as ET
+
 
 def hash_string(to_be_hashed):
     """
@@ -24,6 +26,9 @@ def create_directory_if_not_exists(dir_name):
     for file in read_all_files_from_directory( dir_name, "*"):
         os.remove(file)
 
+
+def remove_redirectory_recursivly( dir_name):
+    shutil.rmtree( dir_name)
 
 
 def read_all_files_from_directory(dir_name, extension):
