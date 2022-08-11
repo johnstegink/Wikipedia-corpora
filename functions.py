@@ -5,6 +5,7 @@ from pathlib import Path
 from lxml import etree as ET
 
 
+
 def hash_string(to_be_hashed):
     """
     Creates a hash string of the string, only for uniqueness
@@ -23,8 +24,8 @@ def create_directory_if_not_exists(dir_name):
 
     os.makedirs( dir_name, exist_ok=True)
     # delete all files
-    for file in read_all_files_from_directory( dir_name, "*"):
-        os.remove(file)
+    # for file in read_all_files_from_directory( dir_name, "*"):
+        # os.remove(file)
 
 
 def remove_redirectory_recursivly( dir_name):
@@ -67,6 +68,19 @@ def write_file(filename, contents):
     file.write( contents)
     file.close()
 
+def append_file(filename, contents):
+    """
+    Append text contents to a file
+    :param filename: path to the file
+    :param contents: textcontents
+    :return: -
+    """
+
+    file = open( filename, mode="a", encoding="utf-8")
+    file.write( contents)
+    file.close()
+
+
 
 
 def xml_as_string(element):
@@ -86,3 +100,32 @@ def create_chunks_of_list(theList, chunk_size):
     """
 
     return [theList[i:i + chunk_size] for i in range(0, len(theList), chunk_size)]
+
+def write_corpus_info(corpusdir, name, language_code):
+    """
+    Write the corpus info
+    :param corpusdir:
+    :param name:
+    :param language_code:
+    :return:
+    """
+    root = ET.fromstring("<corpus></corpus>")
+    ET.SubElement( root, "name").text = name
+    ET.SubElement( root, "language_code").text = language_code
+
+    write_file( os.path.join( corpusdir, "corpus.info"), xml_as_string( root))
+
+
+def read_corpus_info(corpusdir):
+    """
+    Reads the corpus info
+    :param corpusdir:
+    :return: (name, language_code)
+    """
+
+    doc = ET.parse(Path.joinpath( corpusdir, "corpus.info"))
+    corpus = doc.getroot()
+    name = corpus.find("name").text
+    language_code = corpus.find("language_code").text
+
+    return (name, language_code)

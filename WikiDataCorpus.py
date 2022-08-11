@@ -26,8 +26,8 @@ def read_arguments():
 
     parser = argparse.ArgumentParser(description='Read articles from Wikipedia based on the WikiData knowledge graph.')
     parser.add_argument('-s', '--subjects', help='Main wikidata subjects, a comma seperated list of WikiData ids (for example "wd:Q7397")', required=True)
-    parser.add_argument('-l', '--language', help='Language code, for example "nl" or "en"', required=True, default="en")
-    parser.add_argument('-o', '--output', help='Output directory', required=False)
+    parser.add_argument('-l', '--language', help='Language code, for example "nl", "en" or "simple"', required=True, default="en")
+    parser.add_argument('-o', '--output', help='Output directory', required=True)
     args = vars(parser.parse_args())
 
 
@@ -37,11 +37,7 @@ def read_arguments():
         print( message)
         exit( 3)
 
-    if not "output" in args:
-        output = ""
-    else:
-        output = args["output"]
-
+    output = args["output"]
     return (subjects,output, args["language"].lower())
 
 
@@ -164,11 +160,14 @@ if __name__ == '__main__':
     # Create a link file based on the input
     step3(input_dir=step2_dir, output_dir=output, treshold=0.5)
 
-    # Clean up
-    functions.remove_redirectory_recursivly( step1_dir)
-    functions.remove_redirectory_recursivly( step2_dir)
 
     # Create a tsv file in the output with the links form gwikimatch
     ids = [ os.path.basename( file).replace(".xml", "") for file in functions.read_all_files_from_directory( os.path.join(output, "step1"), "xml")]
-    wikimatch.create_filtered_file( os.path.join(output, "gwikimatch.tsv"), set(ids))
+    wikimatch.append_to_filtered_file(os.path.join(output, "gwikimatch.tsv"), set(ids))
+
+    functions.write_corpus_info(output, f"WikiData " + language.upper(), language)
+
+    # Clean up
+    functions.remove_redirectory_recursivly( step1_dir)
+    functions.remove_redirectory_recursivly( step2_dir)
 

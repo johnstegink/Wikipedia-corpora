@@ -1,4 +1,5 @@
 # Class to read articles with the given subject from WikiData
+import random
 import re
 from WikiDataSparql import WDSparql
 import os
@@ -233,6 +234,25 @@ class Wikidata:
         return functions.xml_as_string(article)
 
 
+    def get_random_articles(self, exceptions, count, only_starting_with_a = False):
+        """
+        Returns a list of articles, with everything but the exceptions
+        :param exceptions:
+        :param count: the number of articles to retrieve
+        :param only_starting_with_a: only select lemmata starting with an a
+        :return:
+        """
+
+        to_choose_from = set( self.wikindex.keys())
+        to_choose_from.difference_update( exceptions)
+        to_choose_from = [lemma for lemma in to_choose_from if ":" not in lemma]
+
+        if only_starting_with_a:
+            to_choose_from = [lemma for lemma in to_choose_from if lemma.startswith("A")]
+
+        return random.sample( to_choose_from, count)
+
+
 
 
     @staticmethod
@@ -248,4 +268,5 @@ class Wikidata:
                 return f"Invalid property, it must have the format wd:Q123"
 
         return ""
+
 

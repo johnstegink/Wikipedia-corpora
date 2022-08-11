@@ -65,3 +65,5 @@ if __name__ == '__main__':
     for article in articles:
         links = wikimatch.get_links_of_article( id=article[0])
         save_article(wikidata, wikidata_id=article[0], name=article[1], output=output, links=links)
+
+    functions.write_corpus_info(output, "GWikiMatch " + language.upper(), "en")

@@ -35,5 +35,6 @@ if __name__ == '__main__':
     s2ORC = S2ORC(metadata=os.path.join(metadata, subject), pdf_parses=os.path.join(pdf_parses, subject))
     s2ORC.convert_to_xml( output_dir=os.path.join(output, subject))
 
+    functions.write_corpus_info(output, "S2ORC", "en")
 
 

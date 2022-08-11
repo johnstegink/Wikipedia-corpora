@@ -181,7 +181,7 @@ class GWikiMatch:
 
 
 
-    def create_filtered_file(self, file, ids):
+    def append_to_filtered_file(self, file, ids):
         """
         Creates a file with all relations from the given ids
         :param file: the file to be created
@@ -194,7 +194,7 @@ class GWikiMatch:
             if info[0] in ids and info[1] in ids:
                 lines.append(f"{info[0]}\t{info[1]}\t{info[2]}")
 
-        functions.write_file(file, "\n".join(lines))
+        functions.append_file(file, "\n".join(lines))
 
 
 

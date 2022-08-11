@@ -6,9 +6,10 @@ for training and validating models that generate semantic links between (parts o
 
 For each dataset a separate tool (written in Python) is available, the tools use common libraries for reading the data
 and generating the corpora.
-- `GWikimatchcorpus.py` converts data from the [gWikiMatch dataset](https://github.com/google-research/google-research/tree/master/gwikimatch)
-- `WikiDataCorpus.py` creates a corpus using [WikiData](https://www.wikidata.org) and [Wikipedia](https://www.wikipedia.org)
-- `S2ORCCorpus.py` for obtained from the [S2ORC dataset](https://github.com/allenai/s2orc)
+
+- `GWikimatchcorpus.py` converts data from the [gWikiMatch dataset](https://github.com/google-research/google-research/tree/master/gwikimatch) .
+- `WikiDataCorpus.py` creates a corpus using [WikiData](https://www.wikidata.org) and [Wikipedia](https://www.wikipedia.org) .
+- `S2ORCCorpus.py` for obtained from the [S2ORC dataset](https://github.com/allenai/s2orc) .
 
 
 ## Data
@@ -44,7 +45,7 @@ so they do not need to be extracted beforehand. To extract text and sections fro
 The selected data is written to files in a common format so they can be processed independent of the source of the data. 
 The files are Xml files of which you will find an artificial example below:
 
-```
+```xml
 <doc id="00009">
     <title>Title of the document</title>
     <links>
@@ -111,8 +112,8 @@ Read articles from Wikipedia based on the WikiData knowledge graph.
 arguments:
   -h, --help            show this help message and exit
   -s SUBJECTS, --subjects SUBJECTS
-                        Main wikidata subjects, a comma seperated list of WikiData ids 
-                        (for example "wd:Q7397")
+                        Main wikidata subjects, a comma seperated 
+                        list of WikiData ids (for example "wd:Q7397")
   -l LANGUAGE, --language LANGUAGE
                         Language code, for example "nl" or "en"
   -o OUTPUT,   --output OUTPUT
@@ -131,12 +132,12 @@ Read articles from wikipedia based on the gWikiDataset.
 
 arguments:
   -h, --help            show this help message and exit
-  -s SUBJECT, --subject SUBJECT
+  -s SUBJECT,   --subject SUBJECT
                         Subject, for example "Computer Science"
   -p PDFPARSES, --pdfparses PDFPARSES
                         Directory with pdf_parses
-  -m METADATA, --metadata METADATA
+  -m METADATA,  --metadata METADATA
                         Directory with meta_data
-  -o OUTPUT, --output OUTPUT
+  -o OUTPUT,    --output OUTPUT
                         Output directory
 ```
