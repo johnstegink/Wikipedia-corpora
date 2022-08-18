@@ -18,6 +18,8 @@ wikidata_enpoint = "https://query.wikidata.org/sparql"
 wikipedia_dumpdir = "../../WikipediaDump"
 number_of_random_articles = 1000
 number_of_same_articles = 46
+minimumxmlsize = 1024
+
 
 def read_arguments():
     """
@@ -52,10 +54,17 @@ def save_articles(wikidata, lemmata, count, id_prefix, output):
             id = f"{id_prefix}_{i + 1}"  # Dummy id
 
             xml = wikidata.read_wikipedia_article(id, lemmata[i])
-            if not xml is None and not (wikidata.language == "simple"  and  "#redirect" in xml.lower()):
+            if not xml is None:
                 sections = Sections( contents=xml)
-                sections.create_sections(with_keys=False, links=[], id=id, output_dir=output)
-                written.append( lemmata[i])
+                (xml, nrofsections) = sections.create_sections_xml(with_keys=False, links=[], id=id)
+
+                # Skip the short lemmata
+                if len( xml) >= minimumxmlsize:
+                    filename = os.path.join(output, f"{id}.xml")
+                    functions.write_file(filename, xml)
+
+                    written.append( lemmata[i])
+
 
     functions.write_corpus_info(output, "Random " + wikidata.language.upper(), "en")
     return written
@@ -83,26 +92,26 @@ if __name__ == '__main__':
                         language="en", debug=False)
 
     # 46 Random articles starting with a
-    a_articles = ['Alfred Lif', 'American Physical Society', 'Arrondissement of Die', 'Askar Mamin', 'Art exhibition',
-     'Abdelhamid Ben Badis', 'At Home Among Strangers', 'Arrondissements of the Lot-et-Garonne department',
-     'Afrikan tähti', 'Adelomyrmex boltoni', 'Anabolic steroid', 'Alquézar', 'Akebi', 'Ampoigné', 'Albert Coates',
-     'Aichkirchen, Germany', 'Ayaka Kimura', 'Afro-Haitian', 'Alexander Sergeyevich Yakovlev', 'Agatha Barbara',
-     'Aimyon', "Albiano d'Ivrea", 'Arapaho, Oklahoma', 'Alismatales', 'Arlene McQuade', 'Albert Lebrun',
-     'Adhemir de Barros', 'Auxerre', 'Adams County, Iowa', 'Aconcagua', 'Alan Bates', 'Anna Mouglalis',
-     'Andrea Feldman', 'A Man Before His Time', 'Antivenom', 'Artemi Panarin', 'Adrian Fenty', 'Alexander Hickman',
-     'Ace Frehley', 'Abd al-Aziz Bin Baz', 'Assistant secretary', 'Arnhem', 'Adirondack Mountains', 'Arles',
-     'Alexis Jordan', 'Angelo Badalamenti']
-    # a_articles = simplewiki.get_random_articles( exceptions=[], count=3 * number_of_same_articles, only_starting_with_a=True)
-    # a_articles = save_articles(enwiki, a_articles, number_of_same_articles * 2, "a", english)
-    # a_articles = save_articles(simplewiki, a_articles, number_of_same_articles, "a", simple)
+    a_articles = ['Alice Walker', 'Alfonso Lovo Cordero', 'Akihiro Tabata', 'Alan Hopgood', 'Antonín Dvořák', 'Alan Jackson',
+                  'Andalusian nationalism', 'Austrian Grand Prix', 'Arch of Constantine', 'Andrei Gusev', 'Abhisit Vejjajiva',
+                  'Andromeda XIX', 'American Association of State Highway and Transportation Officials', 'Anatidae',
+                  'American Rescue Plan Act of 2021', 'Augusta', 'Alvarito', 'Alice Cooper', 'Alexandre Torres', 'Alan Greenspan',
+                  'Automotive industry', 'Alan Freeman', 'Aarhus', 'Air India Flight 182', 'Afghan Civil War (1928–1929)', 'Archimedes',
+                  'Agra district', 'Arthur Ravenel Jr. Bridge', 'Alienware', 'Antimony trifluoride', 'Arunachal Pradesh',
+                  'Arrondissement of Cayenne', 'Anton Rubinstein', 'Anglophone Cameroonian', 'Ansbach (district)', 'Arsenic trifluoride',
+                  'Agilodocodon', 'Acre', 'Alfred Edwin Brain Jr.', 'Armani', 'Accelerometer', 'Alice Paul', 'Arizona Coyotes',
+                  'Alfred de Grazia', 'Anne Buttimer', 'Arrondissement of Grenoble']
+    # a_articles = simplewiki.get_random_articles( exceptions=[], count=10 * number_of_same_articles, only_starting_with_a=True)
+    # a_articles = save_articles(enwiki, a_articles, number_of_same_articles * 10, "a", english)
+    # a_articles = save_articles(simplewiki, a_articles, number_of_same_articles * 10 , "a", simple)
 
-    # 1000 different articles
-    random_simple = simplewiki.get_random_articles( exceptions=a_articles, count=(3 * number_of_random_articles), only_starting_with_a=False)
+    # 1000 random articles
+    random_simple = simplewiki.get_random_articles( exceptions=a_articles, count=(10 * number_of_random_articles), only_starting_with_a=False)
     save_articles(simplewiki, a_articles, number_of_same_articles, "a", simple)
     simple_articles = save_articles(simplewiki, random_simple, number_of_random_articles, "r", simple)
 
     # 1000 english articles, exclude the lemmata used for the a_articles an the simple articles
-    random_en = enwiki.get_random_articles( exceptions=(a_articles + simple_articles), count=(3 * number_of_random_articles), only_starting_with_a=False)
+    random_en = enwiki.get_random_articles( exceptions=(a_articles + simple_articles), count=(10 * number_of_random_articles), only_starting_with_a=False)
     save_articles(enwiki, a_articles, number_of_same_articles, "a", english)
     save_articles(enwiki, random_en, number_of_random_articles, "r", english)
 

@@ -123,7 +123,7 @@ def read_corpus_info(corpusdir):
     :return: (name, language_code)
     """
 
-    doc = ET.parse(Path.joinpath( corpusdir, "corpus.info"))
+    doc = ET.parse(os.path.join( corpusdir, "corpus.info"))
     corpus = doc.getroot()
     name = corpus.find("name").text
     language_code = corpus.find("language_code").text

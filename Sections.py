@@ -88,17 +88,14 @@ class Sections:
             return ("", text)
 
 
-
-    def create_sections(self, with_keys, links, id, output_dir):
+    def create_sections_xml(self, with_keys, links, id):
         """
-        Create sections into the output dir
+        Create sections as xml file
         :param with_keys if True a document with keys (outlinks) is created otherwise the parameter links is used for the document
         :param links  if with_keys is False the links will be added to the link section of the document and the section will have no links
         :param id
-        :param output_dir
-        :return: the number of sections without the main section
+        :return: the number of sections without the main section and the number of sections in a tuple (xml, nrofsections)
         """
-
         text = self.xml.find("text").text
         title = self.xml.find("title").text
         page = wtp.parse( text)
@@ -121,18 +118,34 @@ class Sections:
             else:
                 section_title = ""
                 section_text = section.plain_text()
+                section_text = re.sub(r"\{[^}+]}", "", section_text)
 
-            ET.SubElement(section_elem, "title").text = section_title
-            if with_keys:
-                section_elem.append(self.__get_keys(section))
-            else:
-                section_elem.append(self.__get_links([]))
-            ET.SubElement(section_elem, "text").text = section_text
+            if not "wikitable" in section_text:  # Skip the tables
+                ET.SubElement(section_elem, "title").text = section_title
+                if with_keys:
+                    section_elem.append(self.__get_keys(section))
+                else:
+                    section_elem.append(self.__get_links([]))
+                ET.SubElement(section_elem, "text").text = section_text
 
-            id_counter += 1
+                id_counter += 1
+
+        return (functions.xml_as_string(doc), id_counter )
+
+
+    def create_sections(self, with_keys, links, id, output_dir):
+        """
+        Create sections into the output dir
+        :param with_keys if True a document with keys (outlinks) is created otherwise the parameter links is used for the document
+        :param links  if with_keys is False the links will be added to the link section of the document and the section will have no links
+        :param id
+        :param output_dir
+        :return: the number of sections without the main section
+        """
 
         # Write the xml
+        (xml, nrofsections) = self.create_sections_xml( with_keys, links, id)
         filename = os.path.join( output_dir, f"{id}.xml")
-        functions.write_file(filename, functions.xml_as_string(doc))
+        functions.write_file(filename, xml )
 
-        return id_counter - 1 # The number of sections, without the main section
+        return nrofsections
