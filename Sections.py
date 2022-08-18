@@ -111,7 +111,6 @@ class Sections:
         # Now per section
         id_counter = 1
         for section in page.sections:
-            section_elem = ET.SubElement( doc, "section", attrib={"id": f"{id}_{id_counter:02}"})
 
             if( id_counter > 1): # Split if this is not the first section
                 (section_title, section_text) = self.__split_text_and_title( section.plain_text())
@@ -120,7 +119,8 @@ class Sections:
                 section_text = section.plain_text()
                 section_text = re.sub(r"\{[^}+]}", "", section_text)
 
-            if not "wikitable" in section_text:  # Skip the tables
+            if len(section_text) > 10:  # Some data
+                section_elem = ET.SubElement(doc, "section", attrib={"id": f"{id}_{id_counter:02}"})
                 ET.SubElement(section_elem, "title").text = section_title
                 if with_keys:
                     section_elem.append(self.__get_keys(section))
