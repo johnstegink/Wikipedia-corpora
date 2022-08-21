@@ -49,11 +49,23 @@ def read_file(filename):
     :return: contents of file
     """
 
-    file = open( filename, mode="r", encoding="utf-8")
+    file = open( filename, mode="r", encoding="utf-8-sig")
     contents = file.read()
     file.close()
 
     return contents
+
+
+def read_lines_from_file(filename):
+    """
+    Read all (not empty) lines from a file
+    :param filename:
+    :return:
+    """
+    contents = read_file( filename)
+    lines = [line.strip() for line in contents.split("\n") if line.strip() != ""]
+
+    return lines
 
 
 def write_file(filename, contents):
@@ -64,7 +76,7 @@ def write_file(filename, contents):
     :return: -
     """
 
-    file = open( filename, mode="w", encoding="utf-8")
+    file = open( filename, mode="w", encoding="utf-8-sig")
     file.write( contents)
     file.close()
 
@@ -76,7 +88,7 @@ def append_file(filename, contents):
     :return: -
     """
 
-    file = open( filename, mode="a", encoding="utf-8")
+    file = open( filename, mode="a", encoding="utf-8-sig")
     file.write( contents)
     file.close()
 

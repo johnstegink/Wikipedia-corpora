@@ -12,13 +12,15 @@ from Sections import Sections
 from GWikiMatch import GWikiMatch
 from Links import Links
 import os
+import html
+from urllib import parse
 
 # Constants
 wikidata_enpoint = "https://query.wikidata.org/sparql"
 wikipedia_dumpdir = "../../WikipediaDump"
 number_of_random_articles = 1000
 number_of_same_articles = 46
-minimumxmlsize = 1024
+minimumxmlsize = 255
 
 
 def read_arguments():
@@ -65,10 +67,25 @@ def save_articles(wikidata, lemmata, count, id_prefix, output):
 
                     written.append( lemmata[i])
 
-
     functions.write_corpus_info(output, "Random " + wikidata.language.upper(), "en")
     return written
 
+
+def create_link( lemma, language):
+    name = parse.quote(lemma.replace(" ", "_"))
+    url = f"https://{language}.wikipedia.org/wiki/{name}"
+    return f"<a href='{html.escape(url)}' target='_blank'>{html.escape(lemma)}</a>"
+
+def create_html( lemmata, output):
+    with open(output, "w", encoding="utf-8-sig") as f:
+        f.write("<html><head><meta charset='UTF-8'></head><body><table>\n")
+        f.write("<tr><th>Simple</th><th>English</th></tr>\n")
+        for lemma in lemmata:
+            f.write("<tr>\n")
+            f.write("<td>" + create_link( lemma, "simple") + "</td>\n")
+            f.write("<td>" + create_link( lemma, "en") + "</td>\n")
+            f.write("</tr>\n")
+        f.write("</table></body></html>")
 
 def remove_all_files( dir):
     import glob
@@ -92,18 +109,24 @@ if __name__ == '__main__':
                         language="en", debug=False)
 
     # 46 Random articles starting with a
-    a_articles = ['Alice Walker', 'Alfonso Lovo Cordero', 'Akihiro Tabata', 'Alan Hopgood', 'Antonín Dvořák', 'Alan Jackson',
-                  'Andalusian nationalism', 'Austrian Grand Prix', 'Arch of Constantine', 'Andrei Gusev', 'Abhisit Vejjajiva',
-                  'Andromeda XIX', 'American Association of State Highway and Transportation Officials', 'Anatidae',
-                  'American Rescue Plan Act of 2021', 'Augusta', 'Alvarito', 'Alice Cooper', 'Alexandre Torres', 'Alan Greenspan',
-                  'Automotive industry', 'Alan Freeman', 'Aarhus', 'Air India Flight 182', 'Afghan Civil War (1928–1929)', 'Archimedes',
-                  'Agra district', 'Arthur Ravenel Jr. Bridge', 'Alienware', 'Antimony trifluoride', 'Arunachal Pradesh',
-                  'Arrondissement of Cayenne', 'Anton Rubinstein', 'Anglophone Cameroonian', 'Ansbach (district)', 'Arsenic trifluoride',
-                  'Agilodocodon', 'Acre', 'Alfred Edwin Brain Jr.', 'Armani', 'Accelerometer', 'Alice Paul', 'Arizona Coyotes',
-                  'Alfred de Grazia', 'Anne Buttimer', 'Arrondissement of Grenoble']
+    a_articles = \
+        ['Al McCandless', 'Annulment', 'Allianz',
+         'Arbeitsgemeinschaft der öffentlich-rechtlichen Rundfunkanstalten der Bundesrepublik Deutschland', 'Apulia',
+         'American Pit Bull Terrier', 'Ahirwal', 'Al Renfrew', 'Atmosphere of Uranus', 'Australian Music Online',
+         'Altenburg Abbey', 'Astronomical spectroscopy', 'Adventures of Huckleberry Finn', 'Allegheny, Pennsylvania',
+         'Alberta Junior Hockey League', 'Administrative divisions of Iran', 'Ayherre', 'Apple A4', 'Alvin Stardust',
+         'Arthur Conan Doyle', 'Anderson County, Texas', 'Araguari', 'American Name Society', 'Ariana Governorate',
+         'Aussurucq', 'Australian Kelpie', 'Altar', 'Aragonese language', 'Angel Echevarria', 'Anna Deavere Smith',
+         'A Philosopher Lecturing on the Orrery', 'Arrast-Larrebieu', 'Anne Redpath', 'André Bo-Boliko Lokonga',
+         'Alice Hathaway Lee Roosevelt', 'Achille Mbembe', 'Albany, Western Australia', 'Adam Wójcik',
+         'Allen West (politician)', 'Alex Hawkins', 'Ambrogio Fogar', 'Avemetatarsalia', 'André the Giant',
+         'August Zaleski', 'Ave Caesar!', 'Archibald G. Brown']
     # a_articles = simplewiki.get_random_articles( exceptions=[], count=10 * number_of_same_articles, only_starting_with_a=True)
     # a_articles = save_articles(enwiki, a_articles, number_of_same_articles * 10, "a", english)
     # a_articles = save_articles(simplewiki, a_articles, number_of_same_articles * 10 , "a", simple)
+
+    create_html( a_articles, os.path.join( simple, "..", "a.html"))
+
 
     # 1000 random articles
     random_simple = simplewiki.get_random_articles( exceptions=a_articles, count=(10 * number_of_random_articles), only_starting_with_a=False)

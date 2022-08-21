@@ -6,6 +6,9 @@ import re
 import wikitextparser as wtp
 
 class Sections:
+
+    sections_to_exclude = [section.lower() for section in functions.read_lines_from_file("sections_to_exclude.txt")]
+
     def __init__(self, contents):
         """
         Create a sections object
@@ -112,14 +115,15 @@ class Sections:
         id_counter = 1
         for section in page.sections:
 
+            section_text = self.clean_wiki_text(section.plain_text())
+
             if( id_counter > 1): # Split if this is not the first section
-                (section_title, section_text) = self.__split_text_and_title( section.plain_text())
+                (section_title, section_text) = self.__split_text_and_title(section_text)
             else:
                 section_title = ""
-                section_text = section.plain_text()
-                section_text = re.sub(r"\{[^}+]}", "", section_text)
+                section_text = section_text
 
-            if len(section_text) > 10:  # Some data
+            if not section_title.lower() in Sections.sections_to_exclude and len(section_text) > 10:
                 section_elem = ET.SubElement(doc, "section", attrib={"id": f"{id}_{id_counter:02}"})
                 ET.SubElement(section_elem, "title").text = section_title
                 if with_keys:
@@ -132,6 +136,36 @@ class Sections:
 
         return (functions.xml_as_string(doc), id_counter )
 
+
+
+    # Regular expression for clean_wiki_text
+    curly_braces_re = re.compile(r"\{[^}]+}")
+    category_re = re.compile(r"^Category:.*?$", flags=re.MULTILINE | re.IGNORECASE)
+    white_spaces_re = re.compile(r"\s+")
+
+    def clean_wiki_text(self, text):
+        """
+        Clean the text coming from wikipedia
+        :param self:
+        :param text:
+        :return:
+        """
+        clean = Sections.curly_braces_re.sub("", text)  # Remove everyting between curly braces
+        clean = Sections.category_re.sub("", clean)  # Remove the categories
+        clean = clean.replace("=====", "")
+        clean = clean.replace("====", "")
+        clean = clean.replace("===", "")
+        clean = clean.replace("==", "")
+
+        # Remove white spaces and list items
+        not_list_item_or_empty_lines = [line for line in clean.split("\n") if
+                                        not line.strip().startswith("*") and Sections.white_spaces_re.sub("", line) != ""]
+        clean = "\n".join(not_list_item_or_empty_lines)
+
+        # Remove the double spaces
+        clean = Sections.white_spaces_re.sub(" ", clean)
+
+        return clean
 
     def create_sections(self, with_keys, links, id, output_dir):
         """
