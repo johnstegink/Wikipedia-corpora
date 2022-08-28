@@ -141,7 +141,8 @@ class Sections:
     # Regular expression for clean_wiki_text
     curly_braces_re = re.compile(r"\{[^}]+}")
     category_re = re.compile(r"^Category:.*?$", flags=re.MULTILINE | re.IGNORECASE)
-    white_spaces_re = re.compile(r"\s+")
+    file_re = re.compile(r"^File:.*?$", flags=re.MULTILINE | re.IGNORECASE)
+    white_spaces_re = re.compile(r"[ \t]+")
 
     def clean_wiki_text(self, text):
         """
@@ -152,6 +153,7 @@ class Sections:
         """
         clean = Sections.curly_braces_re.sub("", text)  # Remove everyting between curly braces
         clean = Sections.category_re.sub("", clean)  # Remove the categories
+        clean = Sections.file_re.sub("", clean)  # Remove the categories
         clean = clean.replace("=====", "")
         clean = clean.replace("====", "")
         clean = clean.replace("===", "")
@@ -159,7 +161,9 @@ class Sections:
 
         # Remove white spaces and list items
         not_list_item_or_empty_lines = [line for line in clean.split("\n") if
-                                        not line.strip().startswith("*") and Sections.white_spaces_re.sub("", line) != ""]
+                                            not line.strip().startswith("#")
+                                            and not line.strip().startswith("*")
+                                            and Sections.white_spaces_re.sub("", line) != ""]
         clean = "\n".join(not_list_item_or_empty_lines)
 
         # Remove the double spaces

@@ -2,15 +2,15 @@
 # Combined with one of the normal wikipedia
 import math
 import random
+import re
 import sys,argparse
-import threading
+from lxml import etree as ET
+
 
 import Sections
 import functions
 from Wikidata import Wikidata
 from Sections import Sections
-from GWikiMatch import GWikiMatch
-from Links import Links
 import os
 import html
 from urllib import parse
@@ -37,6 +37,16 @@ def read_arguments():
     return (args["simple"], args["english"])
 
 
+def length_of_text_in_xml( xml):
+    """
+    Determines the length of the text in the Xml (without the Xml elements)
+    :param xml:
+    :return:
+    """
+    tree = ET.fromstring( xml)
+    text = ET.tostring(tree, encoding='utf-8', method='text')
+    return len( text)
+
 
 def save_articles(wikidata, lemmata, count, id_prefix, output):
     """
@@ -61,7 +71,7 @@ def save_articles(wikidata, lemmata, count, id_prefix, output):
                 (xml, nrofsections) = sections.create_sections_xml(with_keys=False, links=[], id=id)
 
                 # Skip the short lemmata
-                if len( xml) >= minimumxmlsize:
+                if length_of_text_in_xml(xml) >= minimumxmlsize:
                     filename = os.path.join(output, f"{id}.xml")
                     functions.write_file(filename, xml)
 
@@ -110,20 +120,21 @@ if __name__ == '__main__':
 
     # 46 Random articles starting with a
     a_articles = \
-        ['Al McCandless', 'Annulment', 'Allianz',
-         'Arbeitsgemeinschaft der öffentlich-rechtlichen Rundfunkanstalten der Bundesrepublik Deutschland', 'Apulia',
-         'American Pit Bull Terrier', 'Ahirwal', 'Al Renfrew', 'Atmosphere of Uranus', 'Australian Music Online',
-         'Altenburg Abbey', 'Astronomical spectroscopy', 'Adventures of Huckleberry Finn', 'Allegheny, Pennsylvania',
-         'Alberta Junior Hockey League', 'Administrative divisions of Iran', 'Ayherre', 'Apple A4', 'Alvin Stardust',
-         'Arthur Conan Doyle', 'Anderson County, Texas', 'Araguari', 'American Name Society', 'Ariana Governorate',
-         'Aussurucq', 'Australian Kelpie', 'Altar', 'Aragonese language', 'Angel Echevarria', 'Anna Deavere Smith',
-         'A Philosopher Lecturing on the Orrery', 'Arrast-Larrebieu', 'Anne Redpath', 'André Bo-Boliko Lokonga',
-         'Alice Hathaway Lee Roosevelt', 'Achille Mbembe', 'Albany, Western Australia', 'Adam Wójcik',
-         'Allen West (politician)', 'Alex Hawkins', 'Ambrogio Fogar', 'Avemetatarsalia', 'André the Giant',
-         'August Zaleski', 'Ave Caesar!', 'Archibald G. Brown']
+        ['Arrondissements of the Haute-Marne department', 'Alexander Litvinenko', 'Arnol Kox', 'Ali Boumnijel',
+         'Atze Schröder', 'Allan Hunter (footballer)', 'Arab Winter', 'Aubessagne', 'Anthony Perkins', 'Abusir Papyri',
+         'Ammonium chloride', 'A∴A∴', 'Ayaan Hirsi Ali', 'Avery–MacLeod–McCarty experiment', 'Arsenic trichloride',
+         'Antimony triiodide', 'Alaska Airlines', 'Aldo Duscher', 'Antimony tribromide',
+         "Alabama's 1st congressional district", 'Amazilia hummingbird', 'A. B. Raj', 'Angelos Charisteas',
+         'Abbas Vaez-Tabasi', 'Allele', 'Appanage', 'Anne Nicol Gaylor', 'Antoine Lavoisier',
+         'American Health Care Act of 2017', 'Ace Bailey', 'Axel Heiberg Island', 'Antoine Demoitié',
+         'Armin van Buuren', 'Aqua Timez', 'Audio feedback', 'Anggun', 'Alliance for a Green Revolution in Africa',
+         'AFC Cup', 'Aubignosc', 'Alex Morgan', 'Al-Shams (East Pakistan)', 'Acrolith', 'Alcindo Sartori',
+         'Azerbaijani wine', 'Agen', 'Apollo Quiboloy']
+
     # a_articles = simplewiki.get_random_articles( exceptions=[], count=10 * number_of_same_articles, only_starting_with_a=True)
     # a_articles = save_articles(enwiki, a_articles, number_of_same_articles * 10, "a", english)
     # a_articles = save_articles(simplewiki, a_articles, number_of_same_articles * 10 , "a", simple)
+    # a_46 = a_articles[0:46]
 
     create_html( a_articles, os.path.join( simple, "..", "a.html"))
 
