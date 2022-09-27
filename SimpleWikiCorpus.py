@@ -120,16 +120,52 @@ if __name__ == '__main__':
 
     # 46 Random articles starting with a
     a_articles = \
-        ['Arrondissements of the Haute-Marne department', 'Alexander Litvinenko', 'Arnol Kox', 'Ali Boumnijel',
-         'Atze Schröder', 'Allan Hunter (footballer)', 'Arab Winter', 'Aubessagne', 'Anthony Perkins', 'Abusir Papyri',
-         'Ammonium chloride', 'A∴A∴', 'Ayaan Hirsi Ali', 'Avery–MacLeod–McCarty experiment', 'Arsenic trichloride',
-         'Antimony triiodide', 'Alaska Airlines', 'Aldo Duscher', 'Antimony tribromide',
-         "Alabama's 1st congressional district", 'Amazilia hummingbird', 'A. B. Raj', 'Angelos Charisteas',
-         'Abbas Vaez-Tabasi', 'Allele', 'Appanage', 'Anne Nicol Gaylor', 'Antoine Lavoisier',
-         'American Health Care Act of 2017', 'Ace Bailey', 'Axel Heiberg Island', 'Antoine Demoitié',
-         'Armin van Buuren', 'Aqua Timez', 'Audio feedback', 'Anggun', 'Alliance for a Green Revolution in Africa',
-         'AFC Cup', 'Aubignosc', 'Alex Morgan', 'Al-Shams (East Pakistan)', 'Acrolith', 'Alcindo Sartori',
-         'Azerbaijani wine', 'Agen', 'Apollo Quiboloy']
+        ["Anniston, Alabama",
+         "Aquarius (sports drink)",
+         "Australia national football team",
+         "Advaita Vedanta",
+         "Aegyptosaurus",
+         "Andrew Huxley",
+         "Aboriginal land rights in Australia",
+         "African elephant",
+         "Alcina",
+         "Anthony Wagner",
+         "Actor",
+         #"Academy Award for Best Picture (1950s)",
+         "Angers",
+         "Aspen",
+         "Adrian Lowe",
+         "Acherontia atropos",
+         "Akilattirattu Ammanai",
+         "A1 Grand Prix",
+         "Ashtown Castle",
+         "Aldeburgh Festival",
+         "Alphonse Mucha",
+         "Alex Chernov",
+         "A.C.F. Fiorentina",
+         "Arovell Verlag",
+         "American Lacrosse Conference",
+         "Accent",
+         "Armed Forces of the Russian Federation",
+         "Accession of Romania to the European Union",
+         #"Academy Award for Best Picture (1930s)",
+         "Ashley Tisdale",
+         "AAC",
+         "Azuki bean",
+         "A major",
+         #"American basketball at the Olympics",
+         "Aemilianus",
+         "Arsenic triiodide",
+         "All For Latvia!",
+         "Alchemy",
+         "Alexander the Great",
+         "Arrangement (music)",
+         "Absolute zero",
+         "Agathis",
+         "Aerospace engineering",
+         "Archivist",
+         "Atrax",
+         "Adolf von Henselt"]
 
     # a_articles = simplewiki.get_random_articles( exceptions=[], count=10 * number_of_same_articles, only_starting_with_a=True)
     # a_articles = save_articles(enwiki, a_articles, number_of_same_articles * 10, "a", english)
@@ -140,12 +176,12 @@ if __name__ == '__main__':
 
 
     # 1000 random articles
-    random_simple = simplewiki.get_random_articles( exceptions=a_articles, count=(10 * number_of_random_articles), only_starting_with_a=False)
     save_articles(simplewiki, a_articles, number_of_same_articles, "a", simple)
+    random_simple = simplewiki.get_random_articles( exceptions=a_articles, count=(10 * number_of_random_articles), only_starting_with_a=False)
     simple_articles = save_articles(simplewiki, random_simple, number_of_random_articles, "r", simple)
 
     # 1000 english articles, exclude the lemmata used for the a_articles an the simple articles
-    random_en = enwiki.get_random_articles( exceptions=(a_articles + simple_articles), count=(10 * number_of_random_articles), only_starting_with_a=False)
     save_articles(enwiki, a_articles, number_of_same_articles, "a", english)
+    random_en = enwiki.get_random_articles( exceptions=(a_articles + simple_articles), count=(10 * number_of_random_articles), only_starting_with_a=False)
     save_articles(enwiki, random_en, number_of_random_articles, "r", english)
 

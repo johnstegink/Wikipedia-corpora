@@ -191,8 +191,9 @@ class Wikidata:
         :return:
         """
 
-        parts = url.split("/")  # last part of url
-        name = parts[len(parts)-1]
+        wiki = url.index("/wiki/")
+
+        name = url[(wiki + 6):]  # Everything after wiki
         name = name.replace("_", " ")
         name = urllib.parse.unquote( name)
 
