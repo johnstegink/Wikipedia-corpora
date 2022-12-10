@@ -81,7 +81,7 @@ class S2ORC:
         links_node = ET.SubElement( parent, "links")
         link_set = set( links)  # Just unique values
         for link in link_set:
-            ET.SubElement(links_node, "link").text = str(link)
+            ET.SubElement(links_node, "link", attrib={"id": str(link), "class": "1"}).text = str(link)
 
     def __resolve_links_section(self, section, bib_entries):
         """
@@ -99,7 +99,6 @@ class S2ORC:
             text = text.replace(cite_text, "")  # Remove the citation from the text
             if (ref_id in bib_entries):
                 links.append(bib_entries[ref_id])
-                print( ref_id)
 
         return (text, links)
 

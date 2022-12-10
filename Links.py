@@ -27,6 +27,8 @@ class Links:
 
         if union_length == 0 or intersection_length == 0:
             return 0
+        elif intersection_length >= 10:
+            return 0.75
         else:
             return intersection_length / union_length
 
@@ -41,13 +43,13 @@ class Links:
 
         distances = []
         is_section = "_" in id
+        main_id = id.split("_")[0]
 
         for other in self.links_for_id.keys():
-            # Compare sections with sections and articles with articles
-            if (is_section and "_" in other) or (not is_section and not "_" in other):
-                # Don't compare to yourself
-                if other != id  and not other.startswith(id + "_")  and not id.startswith(other + "_"):
-
+            # Don't compare to yourself
+            if main_id != other.split("_")[0]:
+                # Compare sections with sections and articles with articles
+                if (is_section and "_" in other) or (not is_section and not "_" in other):
                     index = self.__jaccard(self.links_for_id[id], self.links_for_id[other])
                     if( index > 0):
                         distances.append( (other, index))
@@ -142,7 +144,7 @@ class Links:
                 subid = section_elem.attrib["id"]
                 links = self.__read_info( section_elem, articles)
                 doc_links = doc_links.union( set(links))
-                self.links_for_id[id + "_" + subid] = links
+                self.links_for_id[subid] = links
 
             # The document
             name = doc.find("title").text
@@ -171,10 +173,9 @@ class Links:
             self.__create_links(nw_doc, self.__jaccard_to_this(id), treshold)
 
             for section_elem in list(doc.iter("section")):
-                subid = section_elem.attrib["id"]
-                sectionid = id + "_" + subid
+                sectionid = section_elem.attrib["id"]
 
-                nw_sect = ET.SubElement( nw_doc, "section", attrib={"id": id})
+                nw_sect = ET.SubElement( nw_doc, "section", attrib={"id": sectionid})
                 ET.SubElement(nw_sect, "title").text = section_elem.find("title").text
                 ET.SubElement(nw_sect, "text").text = section_elem.find("text").text
 

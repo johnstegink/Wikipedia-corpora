@@ -70,7 +70,7 @@ class GWikiMatch:
         for line in functions.read_file(file).split("\n"):
             fields = line.split("\t")
             if len(fields) == 3:
-                info.append( (fields[1], fields[2], fields[2]))
+                info.append( (fields[1], fields[2], fields[0]))
 
         return info
 

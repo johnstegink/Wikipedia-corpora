@@ -57,7 +57,6 @@ if __name__ == '__main__':
     wikimatch = GWikiMatch(dir=gwikimatch_dir, wikidata_endpoint=wikidata_enpoint, debug=False)
     articles = wikimatch.get_all_articles_with_url( language)
 
-
     wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=[], dump_dir=wikipedia_dumpdir,
                         language=language, debug=False)
 

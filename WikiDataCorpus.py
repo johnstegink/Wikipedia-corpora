@@ -124,6 +124,7 @@ def step3( input_dir, output_dir, treshold):
     functions.create_directory_if_not_exists(output_dir)
     files = functions.read_all_files_from_directory(input_dir, "xml")
 
+
     links = Links( files)
     name_id = links.read_name_id()
     links.read_links( name_id)
@@ -158,7 +159,7 @@ if __name__ == '__main__':
 
 
     # Create a link file based on the input
-    step3(input_dir=step2_dir, output_dir=output, treshold=0.5)
+    step3(input_dir=step2_dir, output_dir=output, treshold=0.4)
 
 
     # Create a tsv file in the output with the links form gwikimatch
