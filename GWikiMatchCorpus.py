@@ -15,7 +15,6 @@ import os
 # Constants
 wikidata_enpoint = "https://query.wikidata.org/sparql"
 wikipedia_dumpdir = "../../WikipediaDump"
-gwikimatch_dir = "GWikiMatch"
 
 
 def read_arguments():
@@ -26,10 +25,11 @@ def read_arguments():
 
     parser = argparse.ArgumentParser(description='Read articles from wikipedia based on the gWikiDataset.')
     parser.add_argument('-l', '--language', help='Language code, for example "nl" or "en"', required=True, default="en")
+    parser.add_argument('-i', '--input', help='Input directory (relative to this script)', required=True)
     parser.add_argument('-o', '--output', help='Output directory', required=True)
     args = vars(parser.parse_args())
 
-    return (args["output"], args["language"].lower())
+    return (args["input"], args["output"], args["language"].lower())
 
 
 
@@ -52,9 +52,9 @@ def save_article(wikidata, wikidata_id, name, links, output):
 
 # Main part of the script
 if __name__ == '__main__':
-    (output, language) = read_arguments()
+    (input, output, language) = read_arguments()
 
-    wikimatch = GWikiMatch(dir=gwikimatch_dir, wikidata_endpoint=wikidata_enpoint, debug=False)
+    wikimatch = GWikiMatch(dir=input, wikidata_endpoint=wikidata_enpoint, debug=False)
     articles = wikimatch.get_all_articles_with_url( language)
 
     wikidata = Wikidata(wikidata_endpoint=wikidata_enpoint, subjects=[], dump_dir=wikipedia_dumpdir,

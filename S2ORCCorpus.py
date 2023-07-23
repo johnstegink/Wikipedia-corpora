@@ -1,4 +1,4 @@
-# Script to create a corpus based on gwikimatch
+# Script to create a corpus based on S2ORC
 # run as: gwikimatch.py -l <language> -o <outputdirectory>
 import math
 import sys,argparse

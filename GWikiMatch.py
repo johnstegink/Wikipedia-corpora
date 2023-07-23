@@ -21,7 +21,7 @@ class GWikiMatch:
 
     def __read_data(self, dir):
         """
-        Read data from the chache file, if it not exists it will be created
+        Read data from the cache file, if it not exists it will be created
         :param dir: directory with GWikiMatch data
         :return: list of tuples with WikiDataIds (source, destination, class)
         """

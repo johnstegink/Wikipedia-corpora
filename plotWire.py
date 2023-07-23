@@ -1,4 +1,4 @@
-# Script to covert a WikiSim or WiRe csv to a format that is compatiple with gWikiMatch
+# Plots the distribution in a WikiSim or WiRe file
 # run as: wire2gwikimatch.py -i <inputfile> -o <outputfile>
 import sys,argparse
 import time
