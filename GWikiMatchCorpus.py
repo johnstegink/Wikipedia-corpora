@@ -66,3 +66,5 @@ if __name__ == '__main__':
         save_article(wikidata, wikidata_id=article[0], name=article[1], output=output, links=links)
 
     functions.write_corpus_info(output, "GWikiMatch " + language.upper(), "en")
+
+    functions.write_article_pairs(output, wikimatch.info)
